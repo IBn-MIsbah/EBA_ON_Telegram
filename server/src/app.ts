@@ -1,15 +1,24 @@
-import express, { Request, Response, Application } from "express";
+import "dotenv/config";
+import express, { Request, Response, Application, NextFunction } from "express";
 import cors from "cors";
-import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
+import dbConnection from "./config/dbConfig.js";
+
+//========= Routes ==============
+import userRouter from "./router/user.route.js";
+import { isProduction } from "./common/index.js";
+import { setupTelegramWebhook } from "./telegram/webhook.js";
+import { telegramBot } from "./telegram/bot.js";
+
+//========= Database connection ============
+dbConnection();
 
 //=============== Constants ================
 const app: Application = express();
-const PORT: number = parseInt(process.env.PORT || "3000");
+const PORT: number = parseInt(process.env.PORT || "5000");
 const apiPrefix = "/api/v1";
 
-const isProduction = process.env.NODE_ENV === "production";
 const BASE_URL = isProduction ? process.env.BASE_URL : "http://loalhost:5371";
 
 //================== Middleware config ===============
@@ -38,6 +47,12 @@ const limiter = rateLimit({
 
 app.use(limiter);
 
+//============== Telegram Routes ===========
+setupTelegramWebhook(app, telegramBot);
+
+//============== Web Routes ================
+app.use(`${apiPrefix}/users`, userRouter);
+
 //============= API Health check =================
 app.get("/health", (req: Request, res: Response) => {
   return res.status(200).json({
@@ -55,6 +70,15 @@ app.use((req: Request, res: Response) => {
   });
 });
 
+//================ Global Error Handler ============
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.log("Server Error: ", err);
+  res.status(500).json({
+    error: "Internal server error",
+    message: isProduction ? undefined : err.message,
+  });
+});
+
 //============= server =================
 app.listen(PORT, () => {
   console.log(
@@ -62,3 +86,5 @@ app.listen(PORT, () => {
   );
   console.log(`server running on http://localhost:${PORT}`);
 });
+
+export { app };
