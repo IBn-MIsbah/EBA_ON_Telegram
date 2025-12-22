@@ -7,9 +7,12 @@ import dbConnection from "./config/dbConfig.js";
 
 //========= Routes ==============
 import userRouter from "./router/user.route.js";
+import authRouter from "./router/auth.route.js";
+
 import { isProduction } from "./common/index.js";
 import { setupTelegramWebhook } from "./telegram/webhook.js";
 import { telegramBot } from "./telegram/bot.js";
+import cookieParser from "cookie-parser";
 
 //========= Database connection ============
 dbConnection();
@@ -25,6 +28,7 @@ const BASE_URL = isProduction ? process.env.BASE_URL : "http://loalhost:5371";
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(
   cors({
     origin: BASE_URL,
@@ -52,6 +56,7 @@ setupTelegramWebhook(app, telegramBot);
 
 //============== Web Routes ================
 app.use(`${apiPrefix}/users`, userRouter);
+app.use(`${apiPrefix}/auth`, authRouter);
 
 //============= API Health check =================
 app.get("/health", (req: Request, res: Response) => {
