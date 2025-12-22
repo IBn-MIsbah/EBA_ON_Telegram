@@ -1,6 +1,3 @@
-# Backend README (`server/README.md`)
-
-```md
 # EBA Smart Ordering – Backend
 
 This is the **backend API** for the EBA Smart Ordering system.  
@@ -103,4 +100,3 @@ http://localhost:5000
 
 ---
 
-````
