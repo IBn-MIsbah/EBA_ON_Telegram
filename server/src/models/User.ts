@@ -3,8 +3,11 @@ import mongoose, { Document, Schema } from "mongoose";
 export interface IUser extends Document {
   name: string;
   phone: string;
+  email: string;
   role: "USER" | "ADMIN";
   password: string;
+  refreshToken: string;
+  isActive: boolean;
   telegramUserId?: string;
 }
 const userSchema = new Schema<IUser>(
@@ -16,8 +19,12 @@ const userSchema = new Schema<IUser>(
     },
     phone: {
       type: String,
-      max: 13,
-      min: 10,
+      maxlength: 13,
+      minlength: 10,
+    },
+    email: {
+      type: String,
+      unique: true,
     },
     role: {
       type: String,
@@ -26,6 +33,13 @@ const userSchema = new Schema<IUser>(
     },
     password: {
       type: String,
+    },
+    refreshToken: {
+      type: String,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
     },
     telegramUserId: {
       type: String,
