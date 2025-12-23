@@ -5,15 +5,17 @@ import {
   meSchema,
 } from "../schemas/auth-schema";
 import { api } from "./api-client";
-import { errorHandler } from "../util/errorHandler";
+import { errorHandler } from "../utils/errorHandler";
 
 export const postLogin = async (data: LoginInput): Promise<Login> => {
   try {
+    console.log(data);
     const response = await api.post("/auth/login", data);
+    console.log("Api response: ", response);
     return response.data;
   } catch (error) {
-    errorHandler("Auth", error);
-    throw new Error("smtg wrong");
+    console.log(error);
+    throw new Error("Login failed");
   }
 };
 
