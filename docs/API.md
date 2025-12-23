@@ -17,7 +17,7 @@
 
 ```
 {
-  "seccess": true,
+  "success": true,
   "message": "Login seccessfully",
   "role": "ADMIN",
   "isActive": true

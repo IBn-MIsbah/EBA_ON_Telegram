@@ -46,7 +46,7 @@ export const AuthController = {
       });
 
       return res.status(200).json({
-        seccess: true,
+        succcess: true,
         message: "Login seccessfully",
         role: user.role,
         isActive: user.isActive,
