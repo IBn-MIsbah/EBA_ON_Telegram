@@ -22,20 +22,21 @@ const app: Application = express();
 const PORT: number = parseInt(process.env.PORT || "5000");
 const apiPrefix = "/api/v1";
 
-const BASE_URL = isProduction ? process.env.BASE_URL : "http://loalhost:5371";
+const BASE_URL = isProduction ? process.env.BASE_URL : "http://localhost:5173";
 
 //================== Middleware config ===============
 app.use(morgan("dev"));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 app.use(
   cors({
     origin: BASE_URL,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -90,6 +91,7 @@ app.listen(PORT, () => {
     `Server running in ${isProduction ? "PRODUCTION" : "DEVELOPMENT"} mode`
   );
   console.log(`server running on http://localhost:${PORT}`);
+  console.log(`client runnig on ${BASE_URL}`);
 });
 
 export { app };
