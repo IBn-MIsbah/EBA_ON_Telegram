@@ -4,6 +4,8 @@ interface UserObj {
   name: string;
   phone: string;
   telegramUserId: string;
+  gender: string;
+  role: string;
 }
 
 /**
@@ -12,7 +14,13 @@ interface UserObj {
  * @returns User document or null on failure
  * @throws Error if creation fails unexpectedly
  */
-export const createUser = async ({ name, phone, telegramUserId }: UserObj) => {
+export const createUser = async ({
+  name,
+  phone,
+  telegramUserId,
+  gender,
+  role,
+}: UserObj) => {
   try {
     const existingUser = await User.findOne({ telegramUserId });
     if (existingUser) return existingUser;
@@ -21,6 +29,8 @@ export const createUser = async ({ name, phone, telegramUserId }: UserObj) => {
       name,
       phone,
       telegramUserId,
+      gender,
+      role,
     });
 
     return newUser;
