@@ -1,6 +1,6 @@
 import TelegramBot from "node-telegram-bot-api";
 import { BOT_TOKEN, isProduction } from "../common/index.js";
-import { createUser } from "./util/user.js";
+import { User } from "../models/User.js";
 
 if (!BOT_TOKEN) {
   throw new Error("Telegram Bot token is not defined in .env");
@@ -16,10 +16,11 @@ telegramBot.onText(/\/start/, (msg) => {
   const options = {
     reply_markup: {
       one_time_keyboard: true,
+      resize_keyboard: true,
       keyboard: [
         [
           {
-            text: "Register with Phone Number",
+            text: "📱 Register with Phone Number",
             request_contact: true,
           },
         ],
@@ -29,47 +30,98 @@ telegramBot.onText(/\/start/, (msg) => {
 
   telegramBot.sendMessage(
     chatId,
-    `Hello, ${msg.from?.username}\nWellcome To EBA Store`,
+    `Hello ${msg.from?.first_name}!\nWelcome to EBA Store. Please share your contact to start.`,
     options
   );
 });
 
 telegramBot.on("contact", async (msg) => {
   const chatId = msg.chat.id;
-
+  if (!chatId) return;
   const phone = msg.contact?.phone_number;
   const name = msg.contact?.first_name || msg.from?.first_name || "Unkwown";
-  const telegramUserId = msg.contact?.user_id || msg.from?.id;
+  const telegramUserId = String(msg.contact?.user_id || msg.from?.id);
 
   if (!phone) return;
-  if (!telegramUserId) throw new Error("Telegram User_id is missing");
+  if (!telegramUserId || telegramUserId === "undifiend")
+    throw new Error("Telegram User_id is missing");
 
   try {
-    const user = {
-      name: name,
-      phone: phone,
-      telegramUserId: String(telegramUserId),
+    await User.findOneAndUpdate(
+      { telegramUserId: telegramUserId },
+      { name, phone, telegramUserId, role: "USER" },
+      { upsert: true, new: true }
+    );
+    const genderOptions = {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: "Male 👨", callback_data: `GEN_M|${telegramUserId}` },
+            { text: "Female 👩", callback_data: `GEN_F|${telegramUserId}` },
+          ],
+        ],
+      },
     };
 
-    // Call your utility function
-    const newUser = await createUser(user);
-
-    if (newUser) {
-      telegramBot.sendMessage(
-        chatId,
-        "✅ Registration successful! You can now use the store.",
-        {
-          reply_markup: { remove_keyboard: true }, // Removes the share button
-        }
-      );
-    }
+    await telegramBot.sendMessage(
+      chatId,
+      `Thanks ${name}! One last step.\nPlease select your gender:`,
+      {
+        ...genderOptions,
+        reply_markup: {
+          ...genderOptions.reply_markup,
+        },
+      }
+    );
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("Contact handler error:", error);
     telegramBot.sendMessage(
       chatId,
-      "❌ Sorry, registration failed. Please try again later."
+      "❌ Something went wrong. Please try /stat again."
     );
   }
+});
+
+telegramBot.on("callback_query", async (query) => {
+  const chatId = query.message?.chat.id;
+  const messageId = query.message?.message_id;
+  const data = query.data;
+
+  if (!chatId || !messageId || !data) {
+    return telegramBot.answerCallbackQuery(query.id, {
+      text: "Error: Message expired or invalid data.",
+    });
+  }
+
+  if (data?.startsWith("GEN_")) {
+    const [action, telegramUserId] = data.split("|");
+    const gender = action === "GEN_M" ? "MALE" : "FEMALE";
+
+    try {
+      const updateUser = await User.findOneAndUpdate(
+        { telegramUserId: String(telegramUserId) },
+        { gender: gender },
+        { new: true }
+      );
+
+      if (updateUser) {
+        await telegramBot.editMessageText(
+          `✅ Registration successful!\n\nWelcome ${updateUser.name}! You are registered as ${gender}.`,
+          {
+            chat_id: chatId,
+            message_id: messageId,
+          }
+        );
+      }
+    } catch (err) {
+      console.error("Callback registration error:", err);
+      telegramBot.sendMessage(
+        chatId,
+        "❌ Registration failed. You might already be registered."
+      );
+    }
+  }
+  telegramBot.answerCallbackQuery(query.id);
 });
 
 telegramBot.onText(/\/status/, (msg) => {
@@ -107,6 +159,7 @@ telegramBot.onText(/\/clear/, async (msg) => {
     );
   }
 });
+
 export const setupBotCommands = () => {
   telegramBot.setMyCommands([
     { command: "start", description: "Start the bot" },
