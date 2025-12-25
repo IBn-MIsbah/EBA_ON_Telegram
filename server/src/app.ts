@@ -4,15 +4,17 @@ import cors from "cors";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
 import dbConnection from "./config/dbConfig.js";
-
-//========= Routes ==============
-import userRouter from "./router/user.route.js";
-import authRouter from "./router/auth.route.js";
+import cookieParser from "cookie-parser";
+import path from "node:path";
 
 import { isProduction } from "./common/index.js";
 import { setupTelegramWebhook } from "./telegram/webhook.js";
 import { telegramBot } from "./telegram/bot.js";
-import cookieParser from "cookie-parser";
+
+//========= Routes ==============
+import userRouter from "./router/user.route.js";
+import authRouter from "./router/auth.route.js";
+import productRouter from "./router/procuct.route.js";
 
 //========= Database connection ============
 dbConnection();
@@ -37,6 +39,7 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use("/public", express.static(path.join(process.cwd(), "public")));
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -58,6 +61,7 @@ setupTelegramWebhook(app, telegramBot);
 //============== Web Routes ================
 app.use(`${apiPrefix}/users`, userRouter);
 app.use(`${apiPrefix}/auth`, authRouter);
+app.use(`${apiPrefix}/product`, productRouter);
 
 //============= API Health check =================
 app.get("/health", (req: Request, res: Response) => {
