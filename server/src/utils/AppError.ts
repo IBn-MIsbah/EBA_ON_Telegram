@@ -1,5 +1,6 @@
 import { Response } from "express";
 import { ZodError } from "zod";
+import { isProduction } from "../common/index.js";
 
 export const AppError = (route: string, res: Response, error: any) => {
   let statusCode = 500;
@@ -20,8 +21,7 @@ export const AppError = (route: string, res: Response, error: any) => {
   if (error.statusCode) {
     statusCode = error.statusCode;
   }
-
-  console.error(`[${route}] Error:`, error);
+  !isProduction && console.error(`[${route}] Error:`, error);
 
   res.status(statusCode).json({
     success: false,
