@@ -21,7 +21,7 @@ export const AppError = (route: string, res: Response, error: any) => {
   if (error.statusCode) {
     statusCode = error.statusCode;
   }
-  !isProduction && console.error(`[${route}] Error:`, error);
+  isProduction ? null : console.error(`[${route}] Error:`, error);
 
   res.status(statusCode).json({
     success: false,
