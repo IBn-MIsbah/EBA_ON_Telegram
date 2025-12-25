@@ -106,7 +106,7 @@ telegramBot.on("callback_query", async (query) => {
 
       if (updateUser) {
         await telegramBot.editMessageText(
-          `✅ Registration successful!\n\nWelcome ${updateUser.name}! You are registered as ${gender}.`,
+          `✅ Registration successful!\n\nWelcome to EBA Store ${updateUser.name}!`,
           {
             chat_id: chatId,
             message_id: messageId,
@@ -164,7 +164,6 @@ export const setupBotCommands = () => {
   telegramBot.setMyCommands([
     { command: "start", description: "Start the bot" },
     { command: "status", description: "Check bot status" },
-    { command: "clear", description: "Clear history" },
   ]);
 };
 
