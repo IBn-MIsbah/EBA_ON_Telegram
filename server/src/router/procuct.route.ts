@@ -7,8 +7,8 @@ const router = Router();
 router
   .post("/", upload.single("image"), ProductController.create)
   .get("/", ProductController.getProduct)
-  .get("/:id", ProductController.getProductById);
-// .put("/:id", )
+  .get("/:id", ProductController.getProductById)
+  .put("/:id", upload.single("image"), ProductController.updateProduct);
 // .delete("/:id");
 
 export default router;
