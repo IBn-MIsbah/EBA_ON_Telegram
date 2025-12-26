@@ -1,32 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // 1. Import useNavigate
+import React from "react";
 import ListProducts from "../components/form/ListProducts";
-import { getMe } from "../services/auth-api";
 import type { Me } from "../schemas/auth-schema";
+import { useAuth } from "../context/auth-context";
 
 export type User = Me["data"];
 
 const Dashboard: React.FC = () => {
-  const [user, setUser] = useState<User>();
-  const navigate = useNavigate(); // 2. Initialize navigate
-
-  useEffect(() => {
-    const fetchMe = async () => {
-      try {
-        const response = await getMe();
-        setUser(response.data);
-      } catch (err: any) {
-        console.error("Error fetchMe: ", err);
-
-        // 3. Check if the error status is 401 (Unauthorized)
-        if (err.response?.status === 401) {
-          navigate("/login"); // Redirect to login page
-        }
-      }
-    };
-    fetchMe();
-  }, [navigate]);
+  const { user } = useAuth();
 
   // Optional: Don't render dashboard content if user isn't loaded yet
   if (!user) {
