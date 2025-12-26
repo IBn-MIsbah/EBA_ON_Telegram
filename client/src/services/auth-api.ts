@@ -39,5 +39,5 @@ export const getMe = async (): Promise<Me> => {
 };
 
 export const postRefresh = async () => {
-  await api.post("/auth/refresh");
+  await api.post("/auth/refresh-token");
 };
