@@ -1,34 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
-import type { User } from "../page/Dashboard";
-import { getMe, postLogout } from "../services/auth-api";
+import { useAuth } from "../context/auth-context";
 
 const MainLayout = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // Add loading state
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const { isLoading, user, logout } = useAuth();
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchMe = async () => {
-      try {
-        const response = await getMe();
-        setUser(response.data);
-      } catch (err: any) {
-        console.error("Error fetchMe: ", err);
-        navigate("/login");
-      } finally {
-        setIsLoading(false); // Stop loading regardless of success/fail
-      }
-    };
-    fetchMe();
-  }, [navigate]);
-
   const hadleLogOut = async () => {
     try {
-      await postLogout();
+      await logout();
       alert("Logged out successfully");
       navigate("/login");
     } catch (err) {
