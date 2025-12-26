@@ -1,19 +1,26 @@
-import React from "react";
+import React, { useEffect } from "react";
 import LoginForm from "../components/form/LoginForm";
 import type { LoginInput } from "../schemas/auth-schema";
-import { postLogin } from "../services/auth-api";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/auth-context";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const { login, isAuthenticated, user } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const from = location.state?.from?.pathname || "/";
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, location, user]);
+
   const handleLoginSubmit = async (data: LoginInput) => {
     try {
-      console.log(data);
-      const response = await postLogin(data);
-
-      console.log(response);
-      alert("Login success");
-      navigate("/");
+      await login(data);
+      alert("Login successful!");
     } catch (error) {
       console.log(error);
       alert("Login failed");
