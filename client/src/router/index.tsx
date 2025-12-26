@@ -1,10 +1,10 @@
 import { createBrowserRouter } from "react-router-dom";
 // import CreateProduct from "../components/form/CreateProductForm";
-import ListProducts from "../components/form/ListProducts";
 import MainLayout from "../layout/MainLayout";
 import CreateProduct from "../components/form/CreateProductForm";
 import Login from "../page/Login";
 import ProductDetail from "../page/ProductDetail";
+import Dashboard from "../page/Dashboard";
 
 // Mock auth check (replace with your actual auth logic)
 // const isAuthenticated = () => !!localStorage.getItem("token");
@@ -16,7 +16,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true, // This is the default home page (/)
-        element: <ListProducts />,
+        element: <Dashboard />,
       },
       {
         path: "product/:id", // Dynamic route for details
@@ -26,10 +26,7 @@ export const router = createBrowserRouter([
         path: "admin/create-product",
         element: <CreateProduct />,
       },
-      {
-        path: "login",
-        element: <Login />,
-      },
+
       //   {
       // path: "admin/create-product",
       // Simple Protected Route Logic
@@ -40,6 +37,10 @@ export const router = createBrowserRouter([
       // ),
       //   },
     ],
+  },
+  {
+    path: "login",
+    element: <Login />,
   },
   //   {
   // path: "/login",
