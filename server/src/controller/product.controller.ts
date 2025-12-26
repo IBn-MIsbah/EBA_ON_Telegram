@@ -2,10 +2,13 @@ import { Request, response, Response } from "express";
 import { AppError } from "../utils/AppError.js";
 import {
   productCreateInputSchema,
+  ProductUpdateInput,
   productUpdateInputSchema,
   productWhereUniqueInput,
 } from "../schema/productSchema.js";
 import { Product } from "../models/Product.js";
+import path from "node:path";
+import fs from "fs";
 
 export const ProductController = {
   create: async (req: Request, res: Response) => {
@@ -37,6 +40,7 @@ export const ProductController = {
       AppError("POST /product", res, error);
     }
   },
+
   getProduct: async (req: Request, res: Response) => {
     try {
       const products = await Product.find().select("-__v");
@@ -71,6 +75,66 @@ export const ProductController = {
       });
     } catch (error) {
       AppError("GET /product/:id", res, error);
+    }
+  },
+
+  updateProduct: async (req: Request, res: Response) => {
+    try {
+      const { id } = productWhereUniqueInput.parse(req.params);
+      const { name, describtion, price, isAvailable, stock } =
+        productUpdateInputSchema.parse(req.body);
+
+      const oldProduct = await Product.findById(id);
+
+      if (!oldProduct) {
+        return res.status(404).json({
+          success: false,
+          message: "Product not found",
+        });
+      }
+
+      const updateData: ProductUpdateInput = {
+        name,
+        describtion,
+        price,
+        isAvailable,
+        stock,
+      };
+      if (req.file && oldProduct.imageUrl) {
+        const oldFilePath = path.join(process.cwd(), oldProduct.imageUrl);
+
+        if (fs.existsSync(oldFilePath)) {
+          fs.unlink(oldFilePath, (err) => {
+            if (err) console.error("Failed to delete old image: ", err);
+            else
+              console.log(
+                "Old image deleted successfully: ",
+                oldProduct.imageUrl
+              );
+          });
+        }
+
+        updateData.imageUrl = `/public/uploads/${req.file?.filename}`;
+      }
+
+      const updatedProduct = await Product.findByIdAndUpdate(id, updateData, {
+        new: true,
+      });
+
+      if (!updatedProduct) {
+        return res.status(404).json({
+          success: false,
+          message: "Product not found",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Product updated successfully!",
+        data: updatedProduct,
+      });
+    } catch (error) {
+      AppError("PUT /product/:id", res, error);
     }
   },
 };
