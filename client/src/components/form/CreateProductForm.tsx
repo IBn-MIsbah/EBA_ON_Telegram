@@ -2,11 +2,11 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import axios from "axios";
 import {
   productCreateInputSchema,
   type ProductCreateInput,
 } from "../../schemas/productSchema";
+import { postProduct } from "../../services/product-api";
 
 const CreateProduct: React.FC = () => {
   const [preview, setPreview] = useState<string | null>(null);
@@ -56,16 +56,17 @@ const CreateProduct: React.FC = () => {
     formData.append("image", imageFile);
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/v1/product",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          withCredentials: true,
-        }
-      );
+      // const response = await axios.post(
+      //   "http://localhost:5000/api/v1/product",
+      //   formData,
+      //   {
+      //     headers: { "Content-Type": "multipart/form-data" },
+      //     withCredentials: true,
+      //   }
+      // );
 
-      alert(response.data.message);
+      const response = await postProduct(formData);
+      alert(response.message);
       reset();
       setPreview(null);
     } catch (error: any) {
