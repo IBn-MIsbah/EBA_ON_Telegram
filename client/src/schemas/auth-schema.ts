@@ -15,10 +15,11 @@ export const loginInputSchema = z.object({
 export const meSchema = z.object({
   success: z.boolean(),
   data: z.object({
-    id: z.string(),
+    _id: z.string(),
+    name: z.string(),
     phone: z.string().optional(),
     email: z.email(),
-    role: z.enum(["ADMIN", "USER"]),
+    role: z.enum(["ADMIN", "USER", "AMIR", "VICEAMIR", "AMIRA", "VICEAMIRA"]),
   }),
 });
 
