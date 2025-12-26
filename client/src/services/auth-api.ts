@@ -5,7 +5,6 @@ import {
   meSchema,
 } from "../schemas/auth-schema";
 import { api } from "./api-client";
-import { errorHandler } from "../utils/errorHandler";
 
 export const postLogin = async (data: LoginInput): Promise<Login> => {
   try {
@@ -22,7 +21,7 @@ export const postLogout = async () => {
     const response = await api.post("/auth/logout");
     return response.data;
   } catch (error) {
-    errorHandler("Logout", error);
+    console.error("Logout", error);
     throw new Error("smtg wrong");
   }
 };
@@ -34,7 +33,7 @@ export const getMe = async (): Promise<Me> => {
 
     return parsedResponse;
   } catch (error) {
-    errorHandler("Me: ", error);
+    console.error("Me: ", error);
     throw new Error("smtg wrong");
   }
 };
