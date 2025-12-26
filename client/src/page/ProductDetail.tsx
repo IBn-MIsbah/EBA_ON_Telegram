@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import type { Product } from "../schemas/productSchema";
 import { getProductById } from "../services/product-api";
 
@@ -97,6 +97,19 @@ const ProductDetail: React.FC = () => {
             >
               {product.isAvailable ? "Add to Cart" : "Out of Stock"}
             </button>
+            <Link to={`/product/${product._id}/edit`}>
+              <button
+                disabled={!product.isAvailable}
+                className={`w-full py-4 rounded-lg font-bold text-lg transition-all 
+                ${
+                  product.isAvailable
+                    ? "bg-black text-white hover:bg-gray-800"
+                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                Edit
+              </button>
+            </Link>
           </div>
         </div>
       </div>
