@@ -1,6 +1,10 @@
 import { Request, response, Response } from "express";
 import { AppError } from "../utils/AppError.js";
-import { productCreateInputSchema } from "../schema/productSchema.js";
+import {
+  productCreateInputSchema,
+  productUpdateInputSchema,
+  productWhereUniqueInput,
+} from "../schema/productSchema.js";
 import { Product } from "../models/Product.js";
 
 export const ProductController = {
@@ -44,6 +48,29 @@ export const ProductController = {
       });
     } catch (error) {
       AppError("GET /product", res, error);
+    }
+  },
+
+  getProductById: async (req: Request, res: Response) => {
+    try {
+      const { id } = productWhereUniqueInput.parse(req.params);
+
+      const product = await Product.findById(id);
+
+      if (!product) {
+        return res.status(404).json({
+          success: false,
+          message: "Product not found.",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Product by id",
+        data: product,
+      });
+    } catch (error) {
+      AppError("GET /product/:id", res, error);
     }
   },
 };
