@@ -81,7 +81,7 @@ export const productUpdateInputSchema = z
   .partial();
 
 export const productWhereUniqueInput = z.object({
-  _id: z.string(),
+  id: z.string(),
 });
 
 export type Product = z.infer<typeof productSchema>;
