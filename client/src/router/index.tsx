@@ -5,6 +5,7 @@ import CreateProduct from "../components/form/CreateProductForm";
 import Login from "../page/Login";
 import ProductDetail from "../page/ProductDetail";
 import Dashboard from "../page/Dashboard";
+import EditProduct from "../components/form/EditProduct";
 
 // Mock auth check (replace with your actual auth logic)
 // const isAuthenticated = () => !!localStorage.getItem("token");
@@ -14,18 +15,10 @@ export const router = createBrowserRouter([
     path: "/",
     element: <MainLayout />, // Wraps all pages with Navbar/Footer
     children: [
-      {
-        index: true, // This is the default home page (/)
-        element: <Dashboard />,
-      },
-      {
-        path: "product/:id", // Dynamic route for details
-        element: <ProductDetail />,
-      },
-      {
-        path: "admin/create-product",
-        element: <CreateProduct />,
-      },
+      { index: true, element: <Dashboard /> },
+      { path: "product/:id", element: <ProductDetail /> },
+      { path: "/product/:id/edit", element: <EditProduct /> },
+      { path: "admin/create-product", element: <CreateProduct /> },
 
       //   {
       // path: "admin/create-product",
