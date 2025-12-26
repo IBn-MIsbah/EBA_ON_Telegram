@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import type { Product } from "../../schemas/productSchema";
 import { getProducts } from "../../services/product-api";
+import { Link } from "react-router-dom";
 
 const ListProducts: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -68,7 +69,7 @@ const ListProducts: React.FC = () => {
                   {p.isAvailable ? `In Stock (${p.stock})` : "Out of Stock"}
                 </span>
                 <button className="bg-black text-white px-3 py-1 rounded hover:bg-gray-800">
-                  View Details
+                  <Link to={`/product/${p._id}`}>View Details</Link>
                 </button>
               </div>
             </div>
