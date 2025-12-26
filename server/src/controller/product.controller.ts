@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, response, Response } from "express";
 import { AppError } from "../utils/AppError.js";
 import { productCreateInputSchema } from "../schema/productSchema.js";
 import { Product } from "../models/Product.js";
@@ -24,13 +24,26 @@ export const ProductController = {
         isAvailable: isAvailable,
       });
 
-      return res.status(200).json({
+      return res.status(201).json({
         success: true,
         message: "Product created successfully!",
         data: newProduct,
       });
     } catch (error) {
       AppError("POST /product", res, error);
+    }
+  },
+  getProduct: async (req: Request, res: Response) => {
+    try {
+      const products = await Product.find().select("-__v");
+
+      return res.status(200).json({
+        success: true,
+        message: "List of all available Products",
+        data: products,
+      });
+    } catch (error) {
+      AppError("GET /product", res, error);
     }
   },
 };
