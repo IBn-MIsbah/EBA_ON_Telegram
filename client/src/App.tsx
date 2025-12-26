@@ -1,5 +1,6 @@
 import "./App.css";
-import ImageUpload from "./components/form/CreateProductForm";
+// import ImageUpload from "./components/form/CreateProductForm";
+import ListProducts from "./components/form/ListProducts";
 // import LoginForm from "./components/form/LoginForm";
 // import type { LoginInput } from "./schemas/auth-schema";
 // import { postLogin } from "./services/auth-api";
@@ -21,7 +22,8 @@ function App() {
       {/* <h1 className="font-extrabold text-2xl">EBA on Telegram</h1> */}
       <div className="flex h-screen w-screen justify-center items-center bg-stone-300">
         {/* <LoginForm onSubmit={handleLoginSubmit} /> */}
-        <ImageUpload />
+        {/* <ImageUpload /> */}
+        <ListProducts />
       </div>
     </>
   );
