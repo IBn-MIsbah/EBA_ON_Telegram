@@ -1,10 +1,10 @@
 import { createBrowserRouter } from "react-router-dom";
 // import CreateProduct from "../components/form/CreateProductForm";
 import ListProducts from "../components/form/ListProducts";
-import ProductDetail from "../components/page/ProductDetail";
 import MainLayout from "../layout/MainLayout";
-import Login from "../components/page/Login";
 import CreateProduct from "../components/form/CreateProductForm";
+import Login from "../page/Login";
+import ProductDetail from "../page/ProductDetail";
 
 // Mock auth check (replace with your actual auth logic)
 // const isAuthenticated = () => !!localStorage.getItem("token");
