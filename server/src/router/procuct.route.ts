@@ -8,7 +8,7 @@ router
   .post("/", upload.single("image"), ProductController.create)
   .get("/", ProductController.getProduct)
   .get("/:id", ProductController.getProductById)
-  .put("/:id", upload.single("image"), ProductController.updateProduct);
-// .delete("/:id");
+  .patch("/:id", upload.single("image"), ProductController.updateProduct)
+  .delete("/:id", ProductController.deleteProduct);
 
 export default router;
