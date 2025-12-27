@@ -137,4 +137,43 @@ export const ProductController = {
       AppError("PUT /product/:id", res, error);
     }
   },
+
+  deleteProduct: async (req: Request, res: Response) => {
+    try {
+      const { id } = productWhereUniqueInput.parse(req.params);
+
+      const deletedProduct = await Product.findByIdAndDelete(id);
+
+      if (!deletedProduct) {
+        return res.status(404).json({
+          success: false,
+          message: "Product not found",
+        });
+      }
+
+      if (deletedProduct.imageUrl) {
+        const relativePath = deletedProduct.imageUrl.startsWith("/")
+          ? deletedProduct.imageUrl.substring(1)
+          : deletedProduct.imageUrl;
+
+        const imagePath = path.join(process.cwd(), relativePath);
+
+        if (fs.existsSync(imagePath)) {
+          fs.unlink(imagePath, (err) => {
+            if (err) console.error("Disk cleanup failed: ", err);
+            else console.log("Image removed from server: ", relativePath);
+          });
+        }
+      }
+
+      // 5. Send Success Response
+      return res.status(200).json({
+        success: true,
+        message: "Product and associated image deleted successfully!",
+        data: deletedProduct,
+      });
+    } catch (error) {
+      AppError("DELETE /product/:id", res, error);
+    }
+  },
 };
