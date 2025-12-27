@@ -45,7 +45,7 @@ export const productCreateInputSchema = z.object({
 export const productUpdateInputSchema = z
   .object({
     name: z.string().optional(),
-    describtion: z.string().optional(),
+    description: z.string().optional(),
     imageUrl: z.url().optional(),
     stock: z
       .union([z.string(), z.number()])

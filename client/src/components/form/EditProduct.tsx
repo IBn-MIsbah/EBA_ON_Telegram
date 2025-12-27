@@ -38,7 +38,7 @@ const EditProduct: React.FC = () => {
         // Populate form with existing data
         reset({
           name: data.name,
-          describtion: data.description,
+          description: data.description,
           price: data.price,
           stock: data.stock,
           isAvailable: data.isAvailable,
@@ -68,7 +68,7 @@ const EditProduct: React.FC = () => {
 
     const formData = new FormData();
     if (data.name) formData.append("name", data.name);
-    if (data.describtion) formData.append("description", data.describtion);
+    if (data.description) formData.append("description", data.description);
     if (data.price !== undefined) formData.append("price", String(data.price));
     if (data.stock !== undefined) formData.append("stock", String(data.stock));
     if (data.isAvailable !== undefined)
@@ -178,7 +178,7 @@ const EditProduct: React.FC = () => {
         <div>
           <label className="text-xs font-bold text-gray-500">Description</label>
           <textarea
-            {...register("describtion")}
+            {...register("description")}
             className="w-full border p-2 rounded h-32"
           />
         </div>

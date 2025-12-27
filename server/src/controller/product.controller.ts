@@ -95,7 +95,7 @@ export const ProductController = {
         });
       }
 
-      const { name, describtion, price, isAvailable, stock } =
+      const { name, description, price, isAvailable, stock } =
         productUpdateInputSchema.parse(req.body);
 
       const oldProduct = await Product.findById(id);
@@ -109,7 +109,7 @@ export const ProductController = {
 
       const updateData: ProductUpdateInput = {
         name,
-        describtion,
+        description,
         price,
         isAvailable,
         stock,
