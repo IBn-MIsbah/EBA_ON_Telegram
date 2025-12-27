@@ -9,6 +9,7 @@ import {
 import { Product } from "../models/Product.js";
 import path from "node:path";
 import fs from "fs";
+import mongoose from "mongoose";
 
 export const ProductController = {
   create: async (req: Request, res: Response) => {
@@ -58,7 +59,12 @@ export const ProductController = {
   getProductById: async (req: Request, res: Response) => {
     try {
       const { id } = productWhereUniqueInput.parse(req.params);
-
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(404).json({
+          success: false,
+          message: "Product not found (Invalid ID format).",
+        });
+      }
       const product = await Product.findById(id);
 
       if (!product) {
@@ -81,6 +87,14 @@ export const ProductController = {
   updateProduct: async (req: Request, res: Response) => {
     try {
       const { id } = productWhereUniqueInput.parse(req.params);
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(404).json({
+          success: false,
+          message: "Product not found (Invalid ID format).",
+        });
+      }
+
       const { name, describtion, price, isAvailable, stock } =
         productUpdateInputSchema.parse(req.body);
 
@@ -141,6 +155,13 @@ export const ProductController = {
   deleteProduct: async (req: Request, res: Response) => {
     try {
       const { id } = productWhereUniqueInput.parse(req.params);
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(404).json({
+          success: false,
+          message: "Product not found (Invalid ID format).",
+        });
+      }
 
       const deletedProduct = await Product.findByIdAndDelete(id);
 
