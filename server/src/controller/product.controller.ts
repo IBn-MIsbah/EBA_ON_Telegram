@@ -191,7 +191,7 @@ export const ProductController = {
       return res.status(200).json({
         success: true,
         message: "Product and associated image deleted successfully!",
-        data: deletedProduct,
+        // data: deletedProduct,
       });
     } catch (error) {
       AppError("DELETE /product/:id", res, error);
