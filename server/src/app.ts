@@ -6,6 +6,7 @@ import rateLimit from "express-rate-limit";
 import dbConnection from "./config/dbConfig.js";
 import cookieParser from "cookie-parser";
 import path from "node:path";
+import ngrok from "@ngrok/ngrok";
 
 import { isProduction } from "./common/index.js";
 import { setupTelegramWebhook } from "./telegram/webhook.js";
@@ -90,12 +91,36 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 //============= server =================
-app.listen(PORT, () => {
+let publicUrl: string = "";
+
+// ... inside app.listen
+app.listen(PORT, async () => {
   console.log(
     `Server running in ${isProduction ? "PRODUCTION" : "DEVELOPMENT"} mode`
   );
+
+  if (!isProduction) {
+    try {
+      // Using the newer SDK syntax
+      const session = await ngrok.connect({
+        addr: PORT,
+        authtoken: process.env.NGROK_AUTHTOKEN,
+      });
+
+      publicUrl = session.url()!; // Save the public URL
+
+      console.log(`🚀 Public Tunnel active: ${publicUrl}`);
+      console.log(
+        `🖼️  Images will be served at: ${publicUrl}/public/uploads/...`
+      );
+
+      // Store it in process.env so your telegramBot file can see it
+      process.env.PUBLIC_URL = publicUrl;
+    } catch (err) {
+      console.error("Error starting Ngrok:", err);
+    }
+  }
   console.log(`server running on http://localhost:${PORT}`);
-  console.log(`client runnig on ${BASE_URL}`);
 });
 
 export { app };
