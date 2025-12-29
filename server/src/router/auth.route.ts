@@ -7,7 +7,7 @@ const router = Router();
 router
   .post("/login", AuthController.login)
   .post("/logout", AuthController.logout)
-  .get("/me", authenticateUser, AuthController.me)
+  .get("/me", AuthController.me)
   .post("/refresh-token", authenticateUser, AuthController.refreshToken);
 //.post('/update') // update credential
 
