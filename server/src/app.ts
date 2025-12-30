@@ -9,8 +9,8 @@ import path from "node:path";
 import ngrok from "@ngrok/ngrok";
 
 import { isProduction } from "./common/index.js";
-import { setupTelegramWebhook } from "./telegram/webhook.js";
-import { telegramBot } from "./telegram/bot.js";
+import { setupTelegramWebhook } from "./bot/webhook.js";
+import { telegramBot } from "./bot/bot.js";
 
 //========= Routes ==============
 import userRouter from "./router/user.route.js";
