@@ -7,14 +7,13 @@ export interface ICartItem {
 }
 
 export interface ICart extends Document {
-  userId: mongoose.Types.ObjectId;
+  telegramUserId: string;
   items: ICartItem[];
-  totalAmount: number;
 }
 
 const cartSchema = new Schema<ICart>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    telegramUserId: { type: String, required: true, unique: true },
     items: [
       {
         productId: {
@@ -22,10 +21,9 @@ const cartSchema = new Schema<ICart>(
           ref: "Product",
           required: true,
         },
-        quantity: { type: Number, default: 1, min: 1 },
+        quantity: { type: Number, default: 1 },
       },
     ],
-    totalAmount: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

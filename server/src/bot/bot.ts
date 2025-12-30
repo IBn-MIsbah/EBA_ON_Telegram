@@ -3,6 +3,7 @@ import TelegramBot, { InlineKeyboardButton } from "node-telegram-bot-api";
 import { BOT_TOKEN, isProduction } from "../common/index.js";
 import { Product } from "../models/Product.js";
 import { User } from "../models/User.js";
+import { Cart } from "../models/Cart.js";
 
 if (!BOT_TOKEN) {
   throw new Error("Telegram Bot token is not defined in .env");
@@ -117,6 +118,7 @@ telegramBot.on("callback_query", async (query) => {
   const chatId = query.message?.chat.id;
   const messageId = query.message?.message_id;
   const data = query.data;
+  const telegramUserId = String(query.from.id);
 
   if (!chatId || !messageId || !data) {
     return telegramBot.answerCallbackQuery(query.id, {
@@ -187,7 +189,41 @@ telegramBot.on("callback_query", async (query) => {
         break;
     }
   }
+  if (data.startsWith("ADD_CAR")) {
+    const productId = data.split("|")[1];
 
+    try {
+      const product = await Product.findById(productId);
+      if (!product || product.stock <= 0) {
+        return telegramBot.answerCallbackQuery(query.id, {
+          text: "❌ Out of stock!",
+        });
+      }
+
+      let cart = await Cart.findOne({ telegramUserId });
+      if (!cart) {
+        cart = new Cart({ telegramUserId, items: [] });
+      }
+
+      const itemIndex = cart.items.findIndex(
+        (item) => item.productId.toString() === productId
+      );
+      if (itemIndex > -1) {
+        cart.items[itemIndex].quantity += 1;
+      } else {
+        cart.items.push({ productId: productId as any, quantity: 1 });
+      }
+      await cart.save();
+      return telegramBot.answerCallbackQuery(query.id, {
+        text: `✅ Added ${product.name} to cart!`,
+      });
+    } catch (error) {
+      console.error("Add to cart error:", error);
+      return telegramBot.answerCallbackQuery(query.id, {
+        text: "❌ Error adding to cart.",
+      });
+    }
+  }
   telegramBot.answerCallbackQuery(query.id);
 });
 
@@ -232,6 +268,48 @@ telegramBot.onText(/\/products/, async (msg) => {
       chatId,
       "❌ Error loading products. Please try again."
     );
+  }
+});
+
+telegramBot.onText(/\/cart/, async (msg) => {
+  const chatId = msg.chat.id;
+  const telegramUserId = String(msg.from?.id);
+
+  try {
+    const cart = await Cart.findOne({ telegramUserId }).populate(
+      "items.productId"
+    );
+    if (!cart || cart.items.length === 0) {
+      return telegramBot.sendMessage(chatId, "🛒 Your cart is empty.");
+    }
+
+    let total = 0;
+    let summary = "🛒 *Your Shopping Cart:*\n━━━━━━━━━━━━━━━\n";
+
+    cart.items.forEach((item: any) => {
+      const subtotal = item.productId.price * item.quantity;
+      total += subtotal;
+      summary += `🔹 *${item.productId.name}*\n   ${
+        item.quantity
+      } x $${item.productId.price.toFixed(2)} = *$${subtotal.toFixed(2)}*\n`;
+    });
+
+    summary += `━━━━━━━━━━━━━━━\n💰 *Total: $${total.toFixed(2)}*`;
+
+    const options = {
+      parse_mode: "Markdown" as const,
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "💳 Checkout", callback_data: "CHECKOUT" }],
+          [{ text: "🗑 Clear Cart", callback_data: "CLEAR_CART" }],
+        ],
+      },
+    };
+
+    await telegramBot.sendMessage(chatId, summary, options);
+  } catch (err) {
+    console.error("View cart error:", err);
+    telegramBot.sendMessage(chatId, "❌ Could not load cart.");
   }
 });
 
@@ -291,6 +369,10 @@ async function sendAllProducts(chatId: number) {
             {
               text: "🔍 View Details",
               callback_data: `PRODUCT_DETAIL|${product._id}`,
+            },
+            {
+              text: "Add to cart",
+              callback_data: `ADD_CAR|${product._id}`,
             },
           ],
         ],
@@ -382,6 +464,10 @@ async function handleProductBrowsing(
       {
         text: "🔍 View Details",
         callback_data: `PRODUCT_DETAIL|${product._id}`,
+      },
+      {
+        text: "Add to cart",
+        callback_data: `ADD_CAR|${product._id}`,
       },
       { text: "📦 Send All", callback_data: "PRODUCT_METHOD|all" },
     ]);
@@ -500,6 +586,10 @@ ${product.description || "No description available"}
               productBrowsingStates.get(chatId)?.currentIndex || 0
             }`,
           },
+          {
+            text: "Add to cart",
+            callback_data: `ADD_CAR|${product._id}`,
+          },
         ],
       ],
     };
@@ -560,8 +650,9 @@ telegramBot.onText(/\/clear/, async (msg) => {
 export const setupBotCommands = () => {
   telegramBot.setMyCommands([
     { command: "start", description: "Start the bot" },
-    { command: "status", description: "Check bot status" },
     { command: "products", description: "Browse available products" },
+    { command: "cart", description: "View your cart" },
+    { command: "status", description: "Check bot status" },
     { command: "clear", description: "Clear messages" },
   ]);
 };
