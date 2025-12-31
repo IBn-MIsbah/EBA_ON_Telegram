@@ -1,6 +1,7 @@
 import React, { useState, type ChangeEvent, type FormEvent } from "react";
 import type { LoginInput } from "../../schemas/auth-schema";
 import Master from "../images/Master.svg";
+import Greeting from "../images/signup.svg";
 
 interface LoginFormProps {
   onSubmit: (data: LoginInput) => void;
@@ -27,9 +28,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
 
   return (
     <div>
-      <div className="min-h-screen w-full bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen w-full flex items-center justify-center p-4">
         {/* Main Container */}
-        <div className="flex flex-col md:flex-row bg-white rounded-2xl shadow-xl overflow-hidden max-w-4xl w-full">
+        <div className="flex flex-col md:flex-row bg-white  rounded-2xl shadow-2xl overflow-hidden max-w-4xl w-full">
           {/* LEFT SIDE*/}
           <div className="md:w-1/2 p-8 flex flex-col items-center justify-center bg-gray-50 border-r border-gray-100">
             {/* Div 1: Heading & Text - Centered */}
@@ -43,9 +44,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
             </div>
 
             {/* Div 2: Image / SVG - Centered and Responsive */}
-            <div className="mt-10 flex justify-center w-full">
+            <div className="mt-10 hidden   md:flex justify-chidden enter w-full">
               <img
-                src={Master}
+                src={Greeting}
                 alt="Store Illustration"
                 className="
         rounded-lg mix-blend-multiply opacity-90 
