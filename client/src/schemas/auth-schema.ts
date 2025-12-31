@@ -8,7 +8,7 @@ export const loginSchema = z.object({
 });
 
 export const loginInputSchema = z.object({
-  email: z.email().min(1, "Email is required"),
+  email: z.email({error: 'Invalid Email!'}).min(1, "Email is required"),
   password: z.string().min(1, "Password is required"),
 });
 
