@@ -10,7 +10,7 @@ import ngrok from "@ngrok/ngrok";
 
 import { isProduction } from "./common/index.js";
 import { setupTelegramWebhook } from "./bot/webhook.js";
-import { telegramBot } from "./bot/bot.js";
+import { setupBot, telegramBot } from "./bot/bot.js";
 
 //========= Routes ==============
 import userRouter from "./router/user.route.js";
@@ -58,6 +58,7 @@ app.use(limiter);
 
 //============== Telegram Routes ===========
 setupTelegramWebhook(app, telegramBot);
+setupBot();
 
 //============== Web Routes ================
 app.use(`${apiPrefix}/users`, userRouter);
