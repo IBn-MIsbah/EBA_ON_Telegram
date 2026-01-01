@@ -22,7 +22,7 @@ export const AuthController = {
       if (!user) {
         return res.status(404).json({
           status: false,
-          message: "Incorrect username or password",
+          message: "Incorrect email or password",
         });
       }
 
@@ -31,7 +31,7 @@ export const AuthController = {
       if (!isPasswordValid) {
         return res.status(401).json({
           success: false,
-          message: "Incorrect username or password",
+          message: "Incorrect email or password",
         });
       }
       const token = generateTokens(user._id.toString(), user.role);
