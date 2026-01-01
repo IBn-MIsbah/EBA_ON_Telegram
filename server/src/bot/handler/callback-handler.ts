@@ -1,5 +1,13 @@
 import { User } from "../../models/User.js";
 import { telegramBot } from "../bot.js";
+import {
+  handleNextProduct,
+  handlePreviousProduct,
+  HandleProductBrowsing,
+  handleProductDetail,
+  handleRefreshProduct,
+} from "../helper/HandleProductBrowsing.js";
+import { HandleProductDisplayMethod } from "../helper/HandleProductDisplayMethod.js";
 
 export const callbackHandler = () => {
   telegramBot.on("callback_query", async (query) => {
@@ -14,6 +22,7 @@ export const callbackHandler = () => {
       });
     }
 
+    // Handle gender selection
     if (data?.startsWith("GEN_")) {
       const [action, telegramUserId] = data.split("|");
       const gender = action === "GEN_M" ? "MALE" : "FEMALE";
@@ -39,6 +48,42 @@ export const callbackHandler = () => {
           chatId,
           "❌ Registration failed. You might already be registered."
         );
+      }
+    }
+    //Handle product browsing
+    else if (data?.startsWith("PRODUCT_")) {
+      const [action, ...params] = data.split("");
+
+      switch (action) {
+        case "PRODUCT_METHOD":
+          const method = params[0];
+          await HandleProductDisplayMethod(
+            chatId,
+            messageId,
+            method,
+            telegramBot
+          );
+          break;
+        case "PRODUCT_BROWSE":
+          const startIndex = parseInt(params[0] || "0");
+          await HandleProductBrowsing(chatId, messageId, startIndex);
+          break;
+        case "PRODUCT_NEXT":
+          await handleNextProduct(chatId, messageId);
+          break;
+
+        case "PRODUCT_PREV":
+          await handlePreviousProduct(chatId, messageId);
+          break;
+
+        case "PRODUCT_REFRESH":
+          await handleRefreshProduct(chatId, messageId);
+          break;
+
+        case "PRODUCT_DETAIL":
+          const productId = params[0];
+          await handleProductDetail(chatId, productId, telegramBot);
+          break;
       }
     }
   });
