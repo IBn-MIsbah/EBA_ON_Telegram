@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import LoginForm from "../components/form/LoginForm";
-import { loginInputSchema, type LoginInput } from "../schemas/auth-schema";
+import { type LoginInput } from "../schemas/auth-schema";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/auth-context";
 import { AxiosError } from "axios";
@@ -21,17 +21,9 @@ const Login: React.FC = () => {
   }, [isAuthenticated, navigate, location, message]);
 
   const handleLoginSubmit = async (data: LoginInput) => {
-    const parseInputData = loginInputSchema.safeParse(data);
-    
-    if (!parseInputData.success) {
-      const validationMsg =
-        parseInputData.error.issues[0]?.message || "Invalid input";
-      setError(validationMsg);
-      setTimeout(() => setError(""), 3000);
-      return; // Stop execution here
-    }
     try {
       setError("");
+      setMessage("");
       await login(data);
 
       setMessage("Success! Welcome back.");
@@ -42,14 +34,11 @@ const Login: React.FC = () => {
         navigate(from, { replace: true });
       }, 1500);
     } catch (err) {
-      console.log(err);
       if (err instanceof AxiosError) {
-        const errMessage = err.response?.data.message;
-        setError(errMessage);
-      } else {
-        setError("Invalid email or password.");
+        setError(err.response?.data.message || "Login failed");
+        return;
       }
-      setTimeout(() => setError(""), 3000);
+      setError("Internal server Error! Please contact Admin!");
     }
   };
 
