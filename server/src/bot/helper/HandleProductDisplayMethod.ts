@@ -14,10 +14,10 @@ export const HandleProductDisplayMethod = async (
       await sendAllProducts(chatId, telegramBot);
       await telegramBot.deleteMessage(chatId, messageId);
     } else if (method === "browse") {
-      await HandleProductBrowsing(chatId, messageId, 0);
+      await HandleProductBrowsing(chatId, messageId, 0, telegramBot);
     }
   } catch (err) {
-    console.error("Product mehtod error: ", err);
+    console.error("Product method error: ", err);
     telegramBot.sendMessage(
       chatId,
       "❌ Error processing your request. Please try again."
@@ -45,16 +45,16 @@ export const sendAllProducts = async (
       { parse_mode: "Markdown" }
     );
 
-    for (let i = 0; i < products.length, i++; ) {
+    for (let i = 0; i < products.length; i++) {
       const product = products[i];
       const message = `
       🏷️ *${product.name}*
       ━━━━━━━━━━━━━━━━
-      📝 ${product.description || "No description available"}
-      ━━━━━━━━━━━━━━━━
-      💰 *Price:* $${product.price.toFixed(2)}
-      📦 *Stock:* ${product.stock > 0 ? `available` : "Out of stock"}
-      🏷️ *Category:* ${product.category || "Uncategorized"}
+    📝 ${product.description || "No description available"}
+    ━━━━━━━━━━━━━━━━
+    💰 *Price:* $${product.price.toFixed(2)}
+    📦 *Stock:* ${product.stock > 0 ? `available` : "Out of stock"}
+    🏷️ *Category:* ${product.category || "Uncategorized"}
             `;
 
       const keyboard = {
