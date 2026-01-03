@@ -1,3 +1,4 @@
+import { Cart } from "../../models/Cart.js";
 import { User } from "../../models/User.js";
 import { telegramBot } from "../bot.js";
 import {
@@ -89,6 +90,44 @@ export const callbackHandler = () => {
             const productId = params[0];
             await handleProductDetail(chatId, productId, telegramBot);
             break;
+        }
+      }
+      // Handle add to cart
+      else if (data?.startsWith("ADD_CART")) {
+        const [action, ...params] = data.split("|");
+
+        try {
+          const productId = params[0];
+
+          let cart = await Cart.findOne({ telegramUserId: telegramUserId });
+          if (!cart) {
+            cart = new Cart({
+              telegramUserId: telegramUserId,
+              items: [{ productId: productId, quantity: 1 }],
+            });
+          } else {
+            const itemIndex = cart.items.findIndex(
+              (item) => item.productId.toString() === productId
+            );
+
+            if (itemIndex > -1) {
+              cart.items[itemIndex].quantity += 1;
+            } else {
+              cart.items.push({ productId: productId as any, quantity: 1 });
+            }
+          }
+          await cart.save();
+
+          await telegramBot.answerCallbackQuery(query.id, {
+            text: "✅ Product added to cart!",
+            show_alert: false,
+          });
+        } catch (err) {
+          console.error("Error adding product to cart: ", err);
+          telegramBot.answerCallbackQuery(query.id, {
+            text: "❌ Failed to add to cart.",
+            show_alert: true,
+          });
         }
       }
 
