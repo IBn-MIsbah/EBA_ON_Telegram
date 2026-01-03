@@ -21,7 +21,6 @@
   },
   "dependencies": {
     "@ngrok/ngrok": "^1.7.0",
-    "@ngrok/ngrok-win32-x64-msvc": "^1.7.0",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
