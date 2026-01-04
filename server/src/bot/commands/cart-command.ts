@@ -6,9 +6,6 @@ export const setupCartCommand = () => {
     const chatId = msg.chat.id;
     const telegramUserId = msg.from?.id;
 
-    console.log("chatId: ", chatId);
-    console.log("telegramUserId: ", telegramUserId);
-
     if (!telegramUserId) return;
 
     await HandleCartItem(chatId, telegramUserId, telegramBot);
