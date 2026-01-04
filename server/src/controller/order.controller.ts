@@ -20,14 +20,20 @@ export const OrderController = {
           break;
         case "ADMIN":
           break;
+        default:
+          return res.status(403).json({ message: "Access denied" });
       }
 
       const orders = await Order.find(query)
-        .populate("user", "phone")
+        .populate("products.productId")
+        .sort({ createdAt: -1 })
         .select("-__v");
-      if (!orders) {
-        return res.status(404).json({
+
+      if (orders.length === 0) {
+        return res.status(200).json({
+          success: true,
           message: "No Order found.",
+          data: [],
         });
       }
 
