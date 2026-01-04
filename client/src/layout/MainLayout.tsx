@@ -42,10 +42,16 @@ const MainLayout = () => {
                 Home
               </Link>
               <Link
-                to="/admin/create-product"
+                to="/create-product"
                 className="hover:text-blue-600 transition-colors"
               >
                 Add Product
+              </Link>
+              <Link
+                to="/orders"
+                className="hover:text-blue-600 transition-colors"
+              >
+                View Orders
               </Link>
             </div>
 
