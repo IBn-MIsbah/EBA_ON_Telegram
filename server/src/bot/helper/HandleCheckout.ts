@@ -68,11 +68,6 @@ export const HandleCheckout = async (
 
     order.telegramMessageId = sentMessage.message_id;
     await order.save();
-
-    await Cart.findOneAndUpdate(
-      { telegramUserId: String(telegramUserId) },
-      { items: [] }
-    );
   } catch (err) {
     console.error("Checkout Error:", err);
     telegramBot.sendMessage(chatId, "❌ An error occurred during checkout.");
