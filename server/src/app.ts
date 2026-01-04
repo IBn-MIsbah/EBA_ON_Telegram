@@ -16,6 +16,7 @@ import { setupBot, telegramBot } from "./bot/bot.js";
 import userRouter from "./router/user.route.js";
 import authRouter from "./router/auth.route.js";
 import productRouter from "./router/procuct.route.js";
+import orderRouter from "./router/order.route.js";
 
 //========= Database connection ============
 dbConnection();
@@ -64,6 +65,7 @@ setupBot();
 app.use(`${apiPrefix}/users`, userRouter);
 app.use(`${apiPrefix}/auth`, authRouter);
 app.use(`${apiPrefix}/product`, productRouter);
+app.use(`${apiPrefix}/orders`, orderRouter);
 
 //============= API Health check =================
 app.get("/health", (req: Request, res: Response) => {
