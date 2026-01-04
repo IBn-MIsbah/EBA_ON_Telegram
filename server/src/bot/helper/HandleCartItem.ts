@@ -52,3 +52,40 @@ export const HandleCartItem = async (
     telegramBot.sendMessage(chatId, "❌ Error loading your cart.");
   }
 };
+
+export const ClearCartItem = async (
+  chatId: number,
+  telegramUserId: string,
+  telegramBot: TelegramBot,
+  queryId?: string
+) => {
+  try {
+    const cart = await Cart.findOneAndUpdate(
+      { telegramUserId: telegramUserId },
+      { $set: { items: [] } },
+      { new: true }
+    );
+
+    if (!cart) {
+      await telegramBot.sendMessage(
+        chatId,
+        "🛒 You don't have an active cart to clear."
+      );
+    }
+
+    await telegramBot.sendMessage(
+      chatId,
+      "🗑 Your cart has been cleared successfully."
+    );
+
+    if (queryId) {
+      await telegramBot.answerCallbackQuery(queryId, { text: "Cart cleared" });
+    }
+  } catch (err) {
+    console.log("Clear cart Error: ", err);
+    await telegramBot.sendMessage(
+      chatId,
+      "❌ Failed to clear cart. Please try again."
+    );
+  }
+};
