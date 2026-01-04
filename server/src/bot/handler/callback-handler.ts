@@ -1,6 +1,8 @@
 import { Cart } from "../../models/Cart.js";
 import { User } from "../../models/User.js";
 import { telegramBot } from "../bot.js";
+import { ClearCartItem } from "../helper/HandleCartItem.js";
+import { HandleCheckout } from "../helper/HandleCheckout.js";
 import {
   handleNextProduct,
   handlePreviousProduct,
@@ -130,7 +132,18 @@ export const callbackHandler = () => {
           });
         }
       }
-
+      // Handle cart status
+      else if (data.startsWith("CART_")) {
+        const [action, ...params] = data.split("|");
+        switch (action) {
+          case "CART_CHECKOUT":
+            await HandleCheckout(chatId, Number(telegramUserId), telegramBot);
+            break;
+          case "CART_CLEAR":
+            await ClearCartItem(chatId, telegramUserId, telegramBot, query.id);
+            break;
+        }
+      }
       await telegramBot.answerCallbackQuery(query.id);
     } catch (err) {
       console.error("Callback Error:", err);
