@@ -5,6 +5,7 @@ import { setupContact } from "./commands/contact-command.js";
 import { callbackHandler } from "./handler/callback-handler.js";
 import { setupProductCommand } from "./commands/product-command.js";
 import { setupCartCommand } from "./commands/cart-command.js";
+import { CheckoutHandler } from "./handler/chechout-handler.js";
 
 if (!BOT_TOKEN) {
   throw new Error("Telegram Bot token is not defined in .env");
@@ -21,6 +22,7 @@ export const setupBot = () => {
   setupCartCommand();
 
   callbackHandler();
+  CheckoutHandler();
 
   setupBotError();
   setupBotCommands();
