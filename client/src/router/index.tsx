@@ -6,6 +6,7 @@ import ProductDetail from "../page/ProductDetail";
 import Dashboard from "../page/Dashboard";
 import EditProduct from "../components/form/EditProduct";
 import { ProtectedRoute } from "../components/ProtectedRoute";
+import OrderPage from "../page/Order";
 
 // Mock auth check (replace with your actual auth logic)
 // const isAuthenticated = () => !!localStorage.getItem("token");
@@ -20,9 +21,10 @@ export const router = createBrowserRouter([
     ), // Wraps all pages with Navbar/Footer
     children: [
       { index: true, element: <Dashboard /> },
-      { path: "product/:id", element: <ProductDetail /> },
+      { path: "/product/:id", element: <ProductDetail /> },
       { path: "/product/:id/edit", element: <EditProduct /> },
-      { path: "admin/create-product", element: <CreateProduct /> },
+      { path: "/create-product", element: <CreateProduct /> },
+      { path: "/orders", element: <OrderPage /> },
     ],
   },
   {
