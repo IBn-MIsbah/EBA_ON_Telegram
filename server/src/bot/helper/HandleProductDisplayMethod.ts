@@ -66,7 +66,7 @@ export const sendAllProducts = async (
             },
             {
               text: "Add to cart",
-              callback_data: `ADD_CAR|${product._id}`,
+              callback_data: `ADD_CART|${product._id}`,
             },
           ],
         ],
