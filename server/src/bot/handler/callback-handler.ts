@@ -1,7 +1,8 @@
 import { Cart } from "../../models/Cart.js";
+import { Product } from "../../models/Product.js";
 import { User } from "../../models/User.js";
 import { telegramBot } from "../bot.js";
-import { ClearCartItem } from "../helper/HandleCartItem.js";
+import { RemoveCartItem } from "../helper/HandleCartItem.js";
 import { HandleCheckout } from "../helper/HandleCheckout.js";
 import {
   handleNextProduct,
@@ -18,121 +19,128 @@ export const callbackHandler = () => {
     const messageId = query.message?.message_id;
     const data = query.data;
     const telegramUserId = String(query.from.id);
+    const queryId = query.id;
+
+    // To prevent "Query is answered" errors
+    let isAnswered = false;
+
     try {
       if (!chatId || !messageId || !data) {
-        return telegramBot.answerCallbackQuery(query.id, {
-          text: "Error: Message expired or invalid data.",
+        return telegramBot.answerCallbackQuery(queryId, {
+          text: "Error: Invalid data or expired message.",
         });
       }
 
-      // Handle gender selection
-      if (data?.startsWith("GEN_")) {
+      // 1. GENDER SELECTION
+      if (data.startsWith("GEN_")) {
         const [action] = data.split("|");
         const gender = action === "GEN_M" ? "MALE" : "FEMALE";
-        try {
-          const updateUser = await User.findOneAndUpdate(
-            { telegramUserId: String(telegramUserId) },
-            { gender: gender },
-            { new: true }
-          );
 
-          if (updateUser) {
-            await telegramBot.editMessageText(
-              `✅ Registration successful!\n\nWelcome to EBA Store ${updateUser.name}!\n\nUse /products to browse our collection.`,
-              {
-                chat_id: chatId,
-                message_id: messageId,
-              }
-            );
-          }
-        } catch (err) {
-          console.error("Callback registration error:", err);
-          telegramBot.sendMessage(
-            chatId,
-            "❌ Registration failed. You might already be registered."
-          );
+        const updateUser = await User.findOneAndUpdate(
+          { telegramUserId },
+          { gender },
+          { new: true }
+        );
+
+        if (updateUser) {
+          const welcomeMessage =
+            `🎊 *Registration Complete!* 🎊\n\n` +
+            `Welcome to the family, *${updateUser.name}*! We've customized your experience for the *${gender}* department.\n\n` +
+            `🛍 *What's Next?*\n` +
+            `━━━━━━━━━━━━━━━━\n` +
+            `📦 /products — Browse collection\n` +
+            `🛒 /cart — View items\n` +
+            `📞 /contact — Support\n` +
+            `🗑 /delete — Clear data\n\n` +
+            `*Happy Shopping!* ☕✨`;
+
+          await telegramBot.editMessageText(welcomeMessage, {
+            chat_id: chatId,
+            message_id: messageId,
+            parse_mode: "Markdown",
+          });
         }
       }
-      //Handle product browsing
-      else if (data?.startsWith("PRODUCT_")) {
-        const [action, ...params] = data.split("|");
 
+      // 2. PRODUCT BROWSING
+      else if (data.startsWith("PRODUCT_")) {
+        const [action, ...params] = data.split("|");
         switch (action) {
           case "PRODUCT_METHOD":
-            const method = params[0];
             await HandleProductDisplayMethod(
               chatId,
               messageId,
-              method,
+              params[0],
               telegramBot
             );
             break;
           case "PRODUCT_BROWSE":
-            const startIndex = parseInt(params[0] || "0");
             await HandleProductBrowsing(
               chatId,
               messageId,
-              startIndex,
+              parseInt(params[0] || "0"),
               telegramBot
             );
             break;
           case "PRODUCT_NEXT":
             await handleNextProduct(chatId, messageId, telegramBot);
             break;
-
           case "PRODUCT_PREV":
             await handlePreviousProduct(chatId, messageId, telegramBot);
             break;
-
           case "PRODUCT_REFRESH":
             await handleRefreshProduct(chatId, messageId, telegramBot);
             break;
-
           case "PRODUCT_DETAIL":
-            const productId = params[0];
-            await handleProductDetail(chatId, productId, telegramBot);
+            await handleProductDetail(chatId, params[0], telegramBot);
             break;
         }
       }
-      // Handle add to cart
-      else if (data?.startsWith("ADD_CART")) {
-        const [action, ...params] = data.split("|");
 
-        try {
-          const productId = params[0];
+      // 3. ADD TO CART
+      else if (data.startsWith("ADD_CART")) {
+        const [, productId] = data.split("|");
+        const product = await Product.findById(productId);
 
-          let cart = await Cart.findOne({ telegramUserId: telegramUserId });
-          if (!cart) {
-            cart = new Cart({
-              telegramUserId: telegramUserId,
-              items: [{ productId: productId, quantity: 1 }],
-            });
-          } else {
-            const itemIndex = cart.items.findIndex(
-              (item) => item.productId.toString() === productId
-            );
-
-            if (itemIndex > -1) {
-              cart.items[itemIndex].quantity += 1;
-            } else {
-              cart.items.push({ productId: productId as any, quantity: 1 });
-            }
-          }
-          await cart.save();
-
-          await telegramBot.answerCallbackQuery(query.id, {
-            text: "✅ Product added to cart!",
-            show_alert: false,
-          });
-        } catch (err) {
-          console.error("Error adding product to cart: ", err);
-          telegramBot.answerCallbackQuery(query.id, {
-            text: "❌ Failed to add to cart.",
+        if (!product || !product.isAvailable || product.stock <= 0) {
+          isAnswered = true;
+          return telegramBot.answerCallbackQuery(queryId, {
+            text: "⚠️ Sorry, this product is out of stock.",
             show_alert: true,
           });
         }
+
+        let cart = await Cart.findOne({ telegramUserId });
+        if (!cart) {
+          cart = new Cart({
+            telegramUserId,
+            items: [{ productId, quantity: 1 }],
+          });
+        } else {
+          const itemIndex = cart.items.findIndex(
+            (i) => i.productId.toString() === productId
+          );
+          if (itemIndex > -1) {
+            if (cart.items[itemIndex].quantity >= product.stock) {
+              isAnswered = true;
+              return telegramBot.answerCallbackQuery(queryId, {
+                text: `❌ Limit reached. Only ${product.stock} in stock.`,
+                show_alert: true,
+              });
+            }
+            cart.items[itemIndex].quantity += 1;
+          } else {
+            cart.items.push({ productId: productId as any, quantity: 1 });
+          }
+        }
+        await cart.save();
+        isAnswered = true;
+        await telegramBot.answerCallbackQuery(queryId, {
+          text: "✅ Added to cart!",
+        });
       }
-      // Handle cart status
+
+      // 4. CART STATUS & CHECKOUT
       else if (data.startsWith("CART_")) {
         const [action, ...params] = data.split("|");
         switch (action) {
@@ -140,16 +148,60 @@ export const callbackHandler = () => {
             await HandleCheckout(chatId, Number(telegramUserId), telegramBot);
             break;
           case "CART_CLEAR":
-            await ClearCartItem(chatId, telegramUserId, telegramBot, query.id);
+            await RemoveCartItem(chatId, telegramUserId, telegramBot);
+            break;
+          case "CART_REMOVE_ITEM":
+            const productId = params[0];
+            await RemoveCartItem(
+              chatId,
+              telegramUserId,
+              telegramBot,
+              productId
+            );
             break;
         }
       }
-      await telegramBot.answerCallbackQuery(query.id);
+
+      // 5. DELETE DATA FLOW
+      else if (data.startsWith("DELETE_")) {
+        const [action] = data.split("|");
+        if (action === "DELETE_CONFIRM") {
+          await Promise.all([
+            User.findOneAndDelete({ telegramUserId }),
+            Cart.findOneAndDelete({ telegramUserId }),
+          ]);
+          await telegramBot.editMessageText(
+            `🗑 *Data Successfully Removed*\n\nYour profile has been cleared.👋`,
+            {
+              chat_id: chatId,
+              message_id: messageId,
+              parse_mode: "Markdown",
+            }
+          );
+        } else {
+          await telegramBot.editMessageText("✅ *Deletion Cancelled*", {
+            chat_id: chatId,
+            message_id: messageId,
+            parse_mode: "Markdown",
+          });
+        }
+        isAnswered = true;
+        await telegramBot.answerCallbackQuery(queryId, {
+          text: action === "DELETE_CONFIRM" ? "Deleted" : "Cancelled",
+        });
+      }
+
+      // Final fallback answer
+      if (!isAnswered) {
+        await telegramBot.answerCallbackQuery(queryId);
+      }
     } catch (err) {
-      console.error("Callback Error:", err);
-      await telegramBot.answerCallbackQuery(query.id, {
-        text: "⚠️ An error occurred.",
-      });
+      console.error("Global Callback Error:", err);
+      if (!isAnswered) {
+        await telegramBot.answerCallbackQuery(queryId, {
+          text: "⚠️ Process failed.",
+        });
+      }
     }
   });
 };
