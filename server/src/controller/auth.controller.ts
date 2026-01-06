@@ -9,6 +9,7 @@ import {
   verifyRefreshToken,
 } from "../utils/token.js";
 import { AuthenticatedRequest } from "../middleware/auth.middleware.js";
+import { SALT_ROUND } from "../common/index.js";
 
 export const AuthController = {
   login: async (req: Request, res: Response) => {
@@ -145,6 +146,56 @@ export const AuthController = {
       return res.json({ message: "Token refreshed successfully" });
     } catch (error) {
       AppError("POST /refresh-token", res, error);
+    }
+  },
+
+  update: async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const id = req.user?.id;
+      const { name, phone, email, role, password, bank, accNO, accHolderName } =
+        req.body;
+
+      const user = await User.findById(id);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found",
+        });
+      }
+
+      if (!SALT_ROUND) {
+        throw new Error("[SALT_ROUND] is not defiend in .env");
+      }
+
+      const updateData: any = {
+        name,
+        phone,
+        email,
+        bank,
+        accNO,
+        accHolderName,
+      };
+      if (password && password.trim() !== "") {
+        updateData.password = await bcrypt.hash(password, Number(SALT_ROUND));
+      }
+
+      if (role && req.user?.role === "ADMIN") {
+        updateData.role = role;
+      }
+
+      const updatedUser = await User.findByIdAndUpdate(
+        id,
+        { $set: updateData },
+        { new: true, runValidators: true }
+      ).select("-__v -password -refreshToken");
+
+      return res.status(200).json({
+        success: true,
+        message: "User data Updated successfully!",
+        data: updatedUser,
+      });
+    } catch (err) {
+      AppError("PATCH /users", res, err);
     }
   },
 };
