@@ -8,6 +8,9 @@ export interface IUser extends Document {
   gender: "MALE" | "FEMALE";
   password: string;
   refreshToken: string;
+  bank: string;
+  accNO: string | number;
+  accHolderName: string;
   isActive: boolean;
   telegramUserId?: string;
 }
@@ -49,6 +52,15 @@ const userSchema = new Schema<IUser>(
       default: true,
     },
     telegramUserId: {
+      type: String,
+    },
+    bank: {
+      type: String,
+    },
+    accNO: {
+      type: String || Number,
+    },
+    accHolderName: {
       type: String,
     },
   },
