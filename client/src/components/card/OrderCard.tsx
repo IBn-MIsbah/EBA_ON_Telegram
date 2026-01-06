@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import type { Order } from "../../schemas/orderSchema";
+import { verifyOrder } from "../../services/order-api";
 
 interface OrderCardProps {
   order: Order;
@@ -7,6 +8,30 @@ interface OrderCardProps {
 
 const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
   const API_URL = "http://localhost:5000";
+
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+
+  const handleVerify = async (orderId: string) => {
+    if (isProcessing) return;
+
+    const confirm = window.confirm(
+      "Verify this payment? This will notify the user and deduct stock."
+    );
+    if (!confirm) return;
+
+    setIsProcessing(true);
+    try {
+      const response = await verifyOrder(orderId);
+      if (response.success) {
+        alert("Order verified! User has been notified on Telegram");
+        window.location.reload();
+      } else {
+        alert(response.message);
+      }
+    } catch (err) {
+      console.error("Error [Handle verify]: ", err);
+    }
+  };
 
   return (
     <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mb-6 flex flex-col md:flex-row">
@@ -93,7 +118,10 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
             </span>
           </div>
           <div className="flex gap-2">
-            <button className="bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-6 rounded-xl transition-all shadow-md active:scale-95">
+            <button
+              onClick={() => handleVerify(order._id)}
+              className="bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-6 rounded-xl transition-all shadow-md active:scale-95"
+            >
               Approve
             </button>
             <button className="bg-white hover:bg-red-50 text-red-500 text-sm font-bold py-2 px-4 rounded-xl border border-red-100 transition-all">
