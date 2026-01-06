@@ -6,6 +6,9 @@ import { callbackHandler } from "./handler/callback-handler.js";
 import { setupProductCommand } from "./commands/product-command.js";
 import { setupCartCommand } from "./commands/cart-command.js";
 import { CheckoutHandler } from "./handler/chechout-handler.js";
+import { setupDeleteCommand } from "./commands/delete-command.js";
+import { setupOrderCommand } from "./commands/order-command.js";
+import { setupMessageCommand } from "./commands/message-command.js";
 
 if (!BOT_TOKEN) {
   throw new Error("Telegram Bot token is not defined in .env");
@@ -20,6 +23,9 @@ export const setupBot = () => {
   setupContact();
   setupProductCommand();
   setupCartCommand();
+  setupDeleteCommand();
+  setupOrderCommand();
+  setupMessageCommand();
 
   callbackHandler();
   CheckoutHandler();
@@ -38,5 +44,8 @@ export const setupBotCommands = () => {
     { command: "start", description: "Start the bot" },
     { command: "products", description: "Browse products" },
     { command: "cart", description: "Show cart" },
+    { command: "contact", description: "Customer support" },
+    { command: "order", description: "View order history" },
+    { command: "delete", description: "Remove Your data" },
   ]);
 };
