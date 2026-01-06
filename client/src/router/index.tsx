@@ -1,15 +1,18 @@
 import { createBrowserRouter } from "react-router-dom";
-import MainLayout from "../layout/MainLayout";
-import CreateProduct from "../components/form/CreateProductForm";
-import Login from "../page/Login";
-import ProductDetail from "../page/ProductDetail";
-import Dashboard from "../page/Dashboard";
-import EditProduct from "../components/form/EditProduct";
-import { ProtectedRoute } from "../components/ProtectedRoute";
-import OrderPage from "../page/Order";
+import { lazy } from "react";
 
-// Mock auth check (replace with your actual auth logic)
-// const isAuthenticated = () => !!localStorage.getItem("token");
+const MainLayout = lazy(() => import("../layout/MainLayout"));
+const CreateProduct = lazy(
+  () => import("../components/form/CreateProductForm")
+);
+const Login = lazy(() => import("../page/Login"));
+const ProductDetail = lazy(() => import("../page/ProductDetail"));
+const Dashboard = lazy(() => import("../page/Dashboard"));
+const EditProduct = lazy(() => import("../components/form/EditProduct"));
+const OrderPage = lazy(() => import("../page/Order"));
+const Settings = lazy(() => import("../page/Settings"));
+
+import { ProtectedRoute } from "../components/ProtectedRoute";
 
 export const router = createBrowserRouter([
   {
@@ -25,18 +28,12 @@ export const router = createBrowserRouter([
       { path: "/product/:id/edit", element: <EditProduct /> },
       { path: "/create-product", element: <CreateProduct /> },
       { path: "/orders", element: <OrderPage /> },
+      { path: "/settings", element: <Settings /> },
     ],
   },
+  { path: "login", element: <Login /> },
   {
-    path: "login",
-    element: <Login />,
-  },
-  //   {
-  // path: "/login",
-  // element: <LoginForm />,
-  //   },
-  {
-    path: "*", // 404 Catch-all
+    path: "*",
     element: <div className="p-20 text-center">404 - Page Not Found</div>,
   },
 ]);
