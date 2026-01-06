@@ -53,6 +53,12 @@ const MainLayout = () => {
               >
                 View Orders
               </Link>
+              <Link
+                to="/settings"
+                className="hover:text-blue-600 transition-colors"
+              >
+                Settings
+              </Link>
             </div>
 
             {/* Display User Name/Avatar */}
