@@ -8,7 +8,7 @@ router
   .post("/login", AuthController.login)
   .post("/logout", AuthController.logout)
   .get("/me", authenticateUser, AuthController.me)
-  .post("/refresh-token", AuthController.refreshToken);
-//.post('/update') // update credential
+  .post("/refresh-token", AuthController.refreshToken)
+  .patch("/update/:id", authenticateUser, AuthController.update);
 
 export default router;
