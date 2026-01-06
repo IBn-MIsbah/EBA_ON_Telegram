@@ -4,6 +4,8 @@ import { OrderController } from "../controller/order.controller.js";
 
 const router = Router();
 
-router.get("/", authenticateUser, OrderController.getOrders);
+router
+  .get("/", authenticateUser, OrderController.getOrders)
+  .patch("/verify/:orderId", authenticateUser, OrderController.verifyOrder);
 
 export default router;
