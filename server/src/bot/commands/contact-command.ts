@@ -86,13 +86,10 @@ export const setupContact = () => {
 
       const response =
         `📞 *Help & Support*\n` +
-        `━━━━━━━━━━━━━━━━\n` +
+        `━━━━━━━━━━━━━━━━━━━━\n` +
         `Representative: *${moderator.name || "Moderator"}*\n` +
-        `Phone: [${moderator.phone}](tel:${moderator.phone.replace(
-          /\s/g,
-          ""
-        )})\n\n` +
-        `_Tap the number to call directly._`;
+        `Phone: \`${moderator.phone}\`\n\n` +
+        `_Tap the number above to copy or call._`;
 
       await telegramBot.sendMessage(chatId, response, {
         parse_mode: "Markdown",
