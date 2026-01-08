@@ -1,10 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import ListProducts from "../components/form/ListProducts";
-import type { Me } from "../schemas/auth-schema";
 import { useAuth } from "../context/auth-context";
-
-export type User = Me["data"];
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
