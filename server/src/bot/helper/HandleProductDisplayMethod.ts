@@ -5,16 +5,16 @@ import { ImageHelper } from "./Image-helper.js";
 
 export const HandleProductDisplayMethod = async (
   chatId: number,
-  messageId: number,
+  messageId: number | undefined,
   method: string,
   telegramBot: TelegramBot
 ) => {
   try {
     if (method === "all") {
       await sendAllProducts(chatId, telegramBot);
-      await telegramBot.deleteMessage(chatId, messageId);
+      await telegramBot.deleteMessage(chatId, Number(messageId));
     } else if (method === "browse") {
-      await HandleProductBrowsing(chatId, messageId, 0, telegramBot);
+      await HandleProductBrowsing(chatId, Number(messageId), 0, telegramBot);
     }
   } catch (err) {
     console.error("Product method error: ", err);
