@@ -27,6 +27,23 @@ export const HandleCheckout = async (
         "❌ User profile not found. Register with /start command"
       );
     }
+    let moderator;
+    if (user.gender === "MALE") {
+      moderator = await User.findOne({ role: "AMIR" });
+    } else if (user.gender === "FEMALE") {
+      moderator = await User.findOne({ role: "AMIRA" });
+    }
+
+    if (!moderator) {
+      moderator = await User.findOne({ role: "ADMIN" });
+    }
+
+    if (!moderator || !moderator.accNO) {
+      return telegramBot.sendMessage(
+        chatId,
+        "⚠️ Bank transfer details are temporarily unavailable. Please contact support."
+      );
+    }
 
     let totalAmount: number = 0;
 
@@ -54,9 +71,9 @@ export const HandleCheckout = async (
     💰 *Total Amount: $${totalAmount.toFixed(2)}*
 
     🏦 *Bank Transfer Details:*
-    Bank: Your Bank Name
-    Account Holder Name: EBA Admin
-    Account Number: 1234567890
+    🏛 *Bank:* ${moderator.bank}
+    👤 *Account:* ${moderator.accHolderName}
+    🔢 *Acc No:* \`${moderator.accNO}\`
 
     📸 *Next Step:*
     Please transfer the total amount and **send a screenshot/receipt** of the transaction to this chat. 
