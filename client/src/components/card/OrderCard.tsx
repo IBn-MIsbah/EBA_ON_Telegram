@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import type { Order } from "../../schemas/orderSchema";
-import { verifyOrder } from "../../services/order-api";
+import { rejectOrder, verifyOrder } from "../../services/order-api";
 
 interface OrderCardProps {
   order: Order;
@@ -30,6 +30,38 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
       }
     } catch (err) {
       console.error("Error [Handle verify]: ", err);
+    }
+  };
+
+  const handleReject = async (orderId: string) => {
+    if (isProcessing) return;
+
+    // 1. Ask for rejection reason
+    const reason = window.prompt(
+      "Reason for rejection (e.g., Invalid receipt, Amount mismatch):"
+    );
+
+    // 2. Validate input (matches your Zod min(1) requirement)
+    if (reason === null) return; // Admin clicked cancel
+    if (reason.trim() === "") {
+      alert("Please provide a reason for rejection.");
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const response = await rejectOrder(orderId, reason);
+      if (response.success) {
+        alert("Order rejected and user notified.");
+        window.location.reload();
+      } else {
+        alert(response.message || "Failed to reject order.");
+      }
+    } catch (err) {
+      console.error("Error [Handle reject]: ", err);
+      alert("An error occurred while rejecting the order.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -124,8 +156,12 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
             >
               Approve
             </button>
-            <button className="bg-white hover:bg-red-50 text-red-500 text-sm font-bold py-2 px-4 rounded-xl border border-red-100 transition-all">
-              Reject
+            <button
+              onClick={() => handleReject(order._id)}
+              disabled={isProcessing || order.status === "cancelled"}
+              className="bg-white hover:bg-red-50 disabled:text-gray-300 disabled:border-gray-200 text-red-500 text-sm font-bold py-2 px-4 rounded-xl border border-red-100 transition-all"
+            >
+              {isProcessing ? "..." : "Reject"}
             </button>
           </div>
         </div>
