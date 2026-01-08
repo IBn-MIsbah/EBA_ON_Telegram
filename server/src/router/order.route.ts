@@ -6,6 +6,7 @@ const router = Router();
 
 router
   .get("/", authenticateUser, OrderController.getOrders)
-  .patch("/verify/:orderId", authenticateUser, OrderController.verifyOrder);
+  .patch("/verify/:orderId", authenticateUser, OrderController.verifyOrder)
+  .patch("/reject/:orderId", authenticateUser, OrderController.rejectOrder);
 
 export default router;
