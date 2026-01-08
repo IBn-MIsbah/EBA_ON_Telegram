@@ -2,6 +2,12 @@ import { Response } from "express";
 import { ZodError } from "zod";
 import { isProduction } from "../common/index.js";
 
+/**
+ *
+ * @param route Route path
+ * @param res Express response object
+ * @param error Error object
+ */
 export const AppError = (route: string, res: Response, error: any) => {
   let statusCode = 500;
   let message = "Internal Server Error";
