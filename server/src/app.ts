@@ -126,4 +126,7 @@ app.listen(PORT, async () => {
   console.log(`server running on http://localhost:${PORT}`);
 });
 
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at: ", promise, "reason: ", reason);
+});
 export { app };
