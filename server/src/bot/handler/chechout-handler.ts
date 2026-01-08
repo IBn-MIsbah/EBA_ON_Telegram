@@ -28,9 +28,13 @@ export const CheckoutHandler = async () => {
         status: "awaiting_payment",
       }).sort({ createdAt: -1 });
 
+      if (!pendingOrder) return;
+
       if (pendingOrder) {
         const fileId = msg.photo[msg.photo.length - 1].file_id;
         const fileLink = await telegramBot.getFileLink(fileId);
+
+        pendingOrder.telegramFileId = fileId;
 
         const uploadDir = path.join(
           process.cwd(),
@@ -51,15 +55,15 @@ export const CheckoutHandler = async () => {
           url: fileLink,
           method: "GET",
           responseType: "stream",
-          timeout: 10000,
+          timeout: 30000,
           httpAgent: new http.Agent({ family: 4 }),
           httpsAgent: new https.Agent({ family: 4 }),
         });
 
         const writer = fs.createWriteStream(localFilePath);
-        response.data.pipe(writer);
 
         await new Promise((resolve, reject) => {
+          response.data.pipe(writer);
           writer.on("finish", resolve);
           writer.on("error", (err) => {
             writer.close();
@@ -87,14 +91,23 @@ export const CheckoutHandler = async () => {
 
       // 🧹 CLEANUP: Delete the file if it was partially created
       if (localFilePath && fs.existsSync(localFilePath)) {
-        fs.unlinkSync(localFilePath);
+        try {
+          fs.unlinkSync(localFilePath);
+        } catch (e) {
+          console.error("Unlink error:", e);
+        }
       }
 
       // 📢 USER FEEDBACK: Be more descriptive
-      await telegramBot.sendMessage(
-        chatId,
-        "❌ **Upload Failed.** We couldn't download your receipt due to a network error. Please try sending the photo again."
-      );
+      await telegramBot
+        .sendMessage(
+          chatId,
+          "❌ *Upload Failed.*\nWe couldn't process your receipt. This is usually due to a temporary network issue. Please try sending the photo again.",
+          { parse_mode: "Markdown" }
+        )
+        .catch((e) =>
+          console.error("Error sending failure message:", e.message)
+        );
     }
   });
 };
