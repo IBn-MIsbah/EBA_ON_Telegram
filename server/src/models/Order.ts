@@ -20,7 +20,7 @@ export interface IOrder extends Document {
     | "shipped"
     | "delivered"
     | "cancelled";
-
+  telegramFileId: string;
   paymentProof?: string; // URL to uploaded screenshot
   adminNotes?: string;
   shippingAddress: string;
@@ -59,6 +59,7 @@ const orderSchema = new Schema<IOrder>(
       ],
       default: "pending",
     },
+    telegramFileId: { type: String },
     paymentProof: { type: String }, // Path: 'uploads/transactions/receipt_123.jpg'
     adminNotes: { type: String }, // Fixed typo: type
     shippingAddress: { type: String },
