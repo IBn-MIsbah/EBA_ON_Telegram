@@ -186,6 +186,10 @@ export const handleProductDetail = async (
     if (!product)
       return telegramBot.sendMessage(chatId, "❌ Product not found.");
 
+    if (product.stock <= 0 && product.isAvailable !== false) {
+      product.isAvailable = false;
+      await product.save();
+    }
     const message = `📋 *Product Details*
 ━━━━━━━━━━━━━━━━
 🏷️ *Name:* ${product.name}
