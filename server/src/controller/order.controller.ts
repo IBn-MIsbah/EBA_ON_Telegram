@@ -5,6 +5,7 @@ import { AuthenticatedRequest } from "../middleware/auth.middleware.js";
 import { Product } from "../models/Product.js";
 import { User } from "../models/User.js";
 import { telegramBot } from "../bot/bot.js";
+import z from "zod";
 
 export const OrderController = {
   getOrders: async (req: AuthenticatedRequest, res: Response) => {
@@ -104,6 +105,76 @@ export const OrderController = {
       });
     } catch (err) {
       AppError("PATCH /orders/verify/orderId", res, err);
+    }
+  },
+
+  rejectOrder: async (req: Request, res: Response) => {
+    const adminNotesVal = z.object({
+      adminNotes: z.string().min(1, "Please write a comment"),
+    });
+    try {
+      const { orderId } = req.params;
+      const { adminNotes } = adminNotesVal.parse(req.body);
+      console.log("adminNotes:", adminNotes);
+      console.log("orderId: ", orderId);
+      const order = await Order.findById(orderId).populate(
+        "products.productId"
+      );
+
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: "Order not found",
+        });
+      }
+      if (order.status === "cancelled") {
+        return res
+          .status(400)
+          .json({ success: false, message: "Order is already cancelled." });
+      }
+
+      if (["shipped", "delivered"].includes(order.status)) {
+        return res.status(400).json({
+          success: false,
+          message: `Cannot cancel an order that is already ${order.status}`,
+        });
+      }
+
+      if (["verified"].includes(order.status)) {
+        for (const item of order.products) {
+          await Product.findByIdAndUpdate(item.productId, {
+            $inc: { stock: item.quantity },
+          });
+        }
+      }
+      order.adminNotes = adminNotes;
+      order.status = "cancelled";
+      await order.save();
+
+      const user = await User.findById(order.userId);
+      console.log("user: ", user);
+      if (user && user.telegramUserId) {
+        const telegramMessage =
+          `❌ *Order Rejected*\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `Order ID: \`${order.orderNumber}\`\n` +
+          `Reason: ${adminNotes}\n\n` +
+          `_Please contact support if you have questions._`;
+
+        try {
+          await telegramBot.sendMessage(user.telegramUserId, telegramMessage, {
+            parse_mode: "Markdown",
+          });
+        } catch (botErr) {
+          console.error("Telegram notification failed:", botErr);
+        }
+      }
+      return res.status(200).json({
+        success: true,
+        message: "Order cancelled and user notified.",
+      });
+    } catch (err) {
+      AppError("PATCH /orders/reject/orderId", res, err);
     }
   },
 };
