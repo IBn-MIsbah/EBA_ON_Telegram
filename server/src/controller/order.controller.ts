@@ -6,6 +6,11 @@ import { Product } from "../models/Product.js";
 import { User } from "../models/User.js";
 import { telegramBot } from "../bot/bot.js";
 import z from "zod";
+import path from "path";
+import http from "http";
+import https from "https";
+import axios from "axios";
+import fs from "fs";
 
 export const OrderController = {
   getOrders: async (req: AuthenticatedRequest, res: Response) => {
@@ -175,6 +180,75 @@ export const OrderController = {
       });
     } catch (err) {
       AppError("PATCH /orders/reject/orderId", res, err);
+    }
+  },
+
+  reDownloadReceipt: async (req: Request, res: Response) => {
+    let localPath: string = "";
+    try {
+      const { orderId } = req.params;
+
+      const order = await Order.findById(orderId);
+      if (!order || !order.telegramFileId) {
+        return res.status(404).json({
+          success: false,
+          message: "Order or File ID not found",
+        });
+      }
+
+      const fileLink = await telegramBot.getFileLink(order.telegramFileId);
+      const fileName = `receipt-${order.orderNumber}-${Date.now()}.jpg`;
+      localPath = path.join(
+        process.cwd(),
+        "public",
+        "uploads",
+        "transactions",
+        fileName
+      );
+
+      const response = await axios({
+        url: fileLink,
+        method: "GET",
+        responseType: "stream",
+        timeout: 30000,
+        httpAgent: new http.Agent({ family: 4 }),
+        httpsAgent: new https.Agent({ family: 4 }),
+      });
+
+      const writer = fs.createWriteStream(localPath);
+
+      await new Promise((resolve, reject) => {
+        response.data.pipe(writer);
+        writer.on("finish", resolve);
+        writer.on("error", (err) => {
+          writer.close();
+          reject(err);
+        });
+      });
+
+      if (order.paymentProof) {
+        const oldPath = path.join(process.cwd(), order.paymentProof);
+        if (fs.existsSync(oldPath)) {
+          try {
+            fs.unlinkSync(oldPath);
+          } catch (e) {
+            console.log("Old file not found, skipping delete");
+          }
+        }
+      }
+
+      order.paymentProof = `/public/uploads/transactions/${fileName}`;
+      await order.save();
+
+      return res.status(201).json({
+        success: true,
+        path: order.paymentProof,
+      });
+    } catch (err) {
+      if (localPath && fs.existsSync(localPath)) {
+        fs.unlinkSync(localPath);
+      }
+      AppError("POST /orders/re-download/:orderId", res, err);
     }
   },
 };
