@@ -10,3 +10,10 @@ export const verifyOrder = async (orderId: string) => {
   const response = await api.patch(`/orders/verify/${orderId}`);
   return response.data;
 };
+
+export const rejectOrder = async (orderId: string, adminNotes: string) => {
+  const response = await api.patch(`/orders/reject/${orderId}`, {
+    adminNotes: adminNotes,
+  });
+  return response.data;
+};
