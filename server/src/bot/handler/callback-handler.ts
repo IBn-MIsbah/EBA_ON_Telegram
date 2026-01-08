@@ -99,7 +99,7 @@ export const callbackHandler = () => {
 
       // 3. ADD TO CART
       else if (data.startsWith("ADD_CART")) {
-        const [, productId] = data.split("|");
+        const [action, productId] = data.split("|");
         const product = await Product.findById(productId);
 
         if (!product || !product.isAvailable || product.stock <= 0) {
