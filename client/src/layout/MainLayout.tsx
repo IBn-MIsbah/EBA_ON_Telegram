@@ -1,126 +1,202 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
-import { Outlet, Link, useNavigate } from "react-router-dom";
+import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/auth-context";
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  PlusCircle,
+  Settings,
+  LogOut,
+  User,
+  Menu,
+  X,
+  ChevronRight,
+  Users,
+} from "lucide-react";
 
 const MainLayout = () => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isLoading, user, logout } = useAuth();
-
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const hadleLogOut = async () => {
+  const handleLogOut = async () => {
     try {
       await logout();
-      alert("Logged out successfully");
       navigate("/login");
     } catch (err) {
       console.error("Logout err: ", err);
     }
   };
 
-  // 1. Show a loader while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#f8faf8] dark:bg-[#0a0f0b]">
+        <div className="relative flex items-center justify-center">
+          <div className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#13ec37] opacity-20"></div>
+          <div className="relative rounded-full h-12 w-12 border-t-4 border-[#13ec37] animate-spin"></div>
+        </div>
       </div>
     );
   }
 
-  // 2. Only render the layout if the user exists
+  if (!user) return null;
+
+  const isActive = (path: string) => location.pathname === path;
+
   return (
-    <>
-      {user ? (
-        <div className="min-h-screen bg-gray-50">
-          <nav className="p-4 bg-white border-b flex items-center justify-between shadow-sm">
-            <div className="flex gap-6 items-center">
-              <Link to="/" className="font-bold text-xl text-blue-600">
-                EBA Store
-              </Link>
-              <Link to="/" className="hover:text-blue-600 transition-colors">
-                Home
-              </Link>
-              <Link
-                to="/create-product"
-                className="hover:text-blue-600 transition-colors"
-              >
-                Add Product
-              </Link>
-              <Link
-                to="/orders"
-                className="hover:text-blue-600 transition-colors"
-              >
-                View Orders
-              </Link>
-              <Link
-                to="/settings"
-                className="hover:text-blue-600 transition-colors"
-              >
-                Settings
-              </Link>
+    <div className="min-h-screen bg-[#f8faf8] dark:bg-[#0a0f0b] text-slate-900 dark:text-white">
+      {/* --- MOBILE HEADER --- */}
+      <header className="md:hidden sticky top-0 z-40 bg-white/80 dark:bg-[#0a0f0b]/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-5 py-4 flex justify-between items-center">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="size-8 bg-[#13ec37] rounded-lg flex items-center justify-center shadow-lg shadow-[#13ec37]/20">
+            <ShoppingBag size={18} className="text-black" />
+          </div>
+          <span className="font-black uppercase tracking-tighter text-lg">
+            EBA Admin
+          </span>
+        </Link>
+        <button
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          className="p-2 text-slate-600 dark:text-slate-400"
+        >
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </header>
+
+      <div className="flex">
+        {/* --- DESKTOP SIDEBAR --- */}
+        <aside className="hidden md:flex w-72 h-screen sticky top-0 flex-col bg-white dark:bg-[#111c13] border-r border-slate-200 dark:border-slate-800 p-8">
+          <div className="flex items-center gap-3 mb-12">
+            <div className="size-10 bg-[#13ec37] rounded-xl flex items-center justify-center shadow-xl">
+              <ShoppingBag size={24} className="text-black" />
             </div>
+            <h1 className="text-xl font-black uppercase tracking-tight">
+              EBA Admin
+            </h1>
+          </div>
 
-            {/* Display User Name/Avatar */}
-            <div className="relative flex items-center gap-4">
-              <span className="hidden sm:inline text-sm font-semibold text-gray-700">
-                {user.name}
-              </span>
-
-              <div className="relative">
-                <button
-                  onClick={() => setIsOpen((prev) => !prev)}
-                  className="h-10 w-10 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold hover:bg-blue-700 transition-all shadow-md focus:ring-2 focus:ring-blue-300 outline-none"
-                >
-                  {user.name.charAt(0).toUpperCase()}
-                </button>
-
-                {/* Dropdown Menu */}
-                {isOpen && (
-                  <>
-                    {/* Transparent overlay to close dropdown when clicking outside */}
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setIsOpen(false)}
-                    ></div>
-
-                    <div className="absolute right-0 mt-3 w-48 bg-white border border-gray-100 rounded-xl shadow-xl py-2 z-20 animate-in fade-in zoom-in duration-150">
-                      <div className="px-4 py-2 border-b border-gray-50 mb-1">
-                        <p className="text-xs text-gray-400">Signed in as</p>
-                        <p className="text-sm font-bold truncate text-gray-800">
-                          {user.name}
-                        </p>
-                      </div>
-
-                      <Link
-                        to="/profile"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        My Profile
-                      </Link>
-
-                      <button
-                        onClick={hadleLogOut}
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors"
-                      >
-                        Logout
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
+          <nav className="flex-1 space-y-2">
+            <SidebarLink
+              to="/"
+              icon={<LayoutDashboard size={20} />}
+              label="Dashboard"
+              active={isActive("/")}
+            />
+            <SidebarLink
+              to="/orders"
+              icon={<ShoppingBag size={20} />}
+              label="View Orders"
+              active={isActive("/orders")}
+            />
+            <SidebarLink
+              to="/create-product"
+              icon={<PlusCircle size={20} />}
+              label="Add Product"
+              active={isActive("/create-product")}
+            />
+            <SidebarLink
+              to="/users"
+              icon={<Users size={20} />}
+              label="Manage users"
+              active={isActive("/users")}
+            />
+            <SidebarLink
+              to="/settings"
+              icon={<Settings size={20} />}
+              label="Settings"
+              active={isActive("/settings")}
+            />
           </nav>
 
-          <main className="max-w-7xl mx-auto py-6 px-4">
-            <Outlet context={{ user }} />{" "}
-            {/* You can pass user data to child routes via context */}
-          </main>
-        </div>
-      ) : null}
-    </>
+          <div className="pt-8 border-t border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-3 mb-6 p-2">
+              <div className="size-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-[#13ec37]">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-black truncate">{user.name}</p>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                  Administrator
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleLogOut}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 font-black text-xs uppercase tracking-widest hover:bg-red-50 dark:hover:bg-red-950/20 transition-all"
+            >
+              <LogOut size={18} /> Logout
+            </button>
+          </div>
+        </aside>
+
+        {/* --- MAIN CONTENT AREA --- */}
+        <main className="flex-1 min-w-0 pb-24 md:pb-8">
+          <div className="max-w-7xl mx-auto">
+            <Outlet context={{ user }} />
+          </div>
+        </main>
+      </div>
+
+      {/* --- MOBILE BOTTOM NAVIGATION --- */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-[#111c13]/90 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 px-6 py-3 flex justify-between items-center">
+        <MobileNavLink
+          to="/"
+          icon={<LayoutDashboard size={22} />}
+          active={isActive("/")}
+        />
+        <MobileNavLink
+          to="/orders"
+          icon={<ShoppingBag size={22} />}
+          active={isActive("/orders")}
+        />
+        <Link
+          to="/create-product"
+          className="bg-[#13ec37] p-4 rounded-full -mt-12 shadow-2xl border-4 border-[#f8faf8] dark:border-[#0a0f0b] text-black active:scale-90 transition-transform"
+        >
+          <PlusCircle size={24} />
+        </Link>
+        <MobileNavLink
+          to="/settings"
+          icon={<Settings size={22} />}
+          active={isActive("/settings")}
+        />
+        <button onClick={handleLogOut} className="p-2 text-slate-400">
+          <LogOut size={22} />
+        </button>
+      </nav>
+    </div>
   );
 };
+
+/* --- Sub-Components --- */
+
+const SidebarLink = ({ to, icon, label, active }: any) => (
+  <Link
+    to={to}
+    className={`flex items-center justify-between px-4 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${
+      active
+        ? "bg-[#13ec37] text-black shadow-lg shadow-[#13ec37]/20"
+        : "text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+    }`}
+  >
+    <div className="flex items-center gap-3">
+      {icon}
+      {label}
+    </div>
+    {active && <ChevronRight size={14} />}
+  </Link>
+);
+
+const MobileNavLink = ({ to, icon, active }: any) => (
+  <Link
+    to={to}
+    className={`p-2 transition-colors ${
+      active ? "text-[#13ec37]" : "text-slate-400"
+    }`}
+  >
+    {icon}
+  </Link>
+);
 
 export default MainLayout;

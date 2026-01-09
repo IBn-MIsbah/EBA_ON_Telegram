@@ -4,48 +4,54 @@ import { type LoginInput } from "../schemas/auth-schema";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/auth-context";
 import { AxiosError } from "axios";
+import { toast } from "sonner";
+// import { Toaster } from "sonner";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login, isAuthenticated } = useAuth();
 
-  const [message, setMessage] = useState<string>("");
-  const [error, setError] = useState<string>("");
-
   useEffect(() => {
-    if (isAuthenticated && message === "") {
+    if (isAuthenticated) {
       const from = location.state?.from?.pathname || "/";
       navigate(from, { replace: true });
     }
-  }, [isAuthenticated, navigate, location, message]);
+  }, [isAuthenticated, navigate, location]);
 
   const handleLoginSubmit = async (data: LoginInput) => {
     try {
-      setError("");
-      setMessage("");
       await login(data);
 
-      setMessage("Success! Welcome back.");
+      toast.success("Login successful!", {
+        duration: 3000,
+        description: "Welcome back to EBA Admin",
+      });
 
-      // Delay the navigation
       setTimeout(() => {
         const from = location.state?.from?.pathname || "/";
         navigate(from, { replace: true });
       }, 1500);
     } catch (err) {
       if (err instanceof AxiosError) {
-        setError(err.response?.data.message || "Login failed");
+        toast.error("Login failed", {
+          description: err.response?.data.message || "Invalid credentials",
+          duration: 3000,
+        });
         return;
       }
-      setError("Internal server Error! Please contact Admin!");
+      toast.error("Server error", {
+        description: "Internal server error! Please contact admin.",
+        duration: 3000,
+      });
     }
   };
 
   return (
-    <div className="flex h-screen w-screen justify-center items-center">
-      <LoginForm onSubmit={handleLoginSubmit} error={error} message={message} />
-    </div>
+    <>
+      <LoginForm onSubmit={handleLoginSubmit} />
+    </>
   );
 };
+
 export default Login;

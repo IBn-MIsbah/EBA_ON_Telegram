@@ -1,198 +1,186 @@
 import React, { useState } from "react";
 import type { Order } from "../../schemas/orderSchema";
 import { rejectOrder, verifyOrder } from "../../services/order-api";
+import {
+  CheckCircle,
+  XCircle,
+  Eye,
+  Package,
+  ArrowUpRight,
+  Loader2,
+} from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface OrderCardProps {
   order: Order;
+  onUpdate: () => void;
 }
 
-const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
+const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdate }) => {
   const API_URL = "http://localhost:5000";
-
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  const handleVerify = async (orderId: string) => {
-    if (isProcessing) return;
-
-    const confirm = window.confirm(
-      "Verify this payment? This will notify the user and deduct stock."
-    );
-    if (!confirm) return;
-
-    setIsProcessing(true);
-    try {
-      const response = await verifyOrder(orderId);
-      if (response.success) {
-        alert("Order verified! User has been notified on Telegram");
-        window.location.reload();
-      } else {
-        alert(response.message);
-      }
-    } catch (err) {
-      console.error("Error [Handle verify]: ", err);
+  // Status Color Logic based on your 7-stage lifecycle
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "pending":
+      case "awaiting_payment":
+        return "text-slate-400 bg-slate-400/10 border-slate-400/20";
+      case "payment_received":
+        return "text-blue-500 bg-blue-500/10 border-blue-500/20";
+      case "verified":
+      case "shipped":
+      case "delivered":
+        return "text-[#13ec37] bg-[#13ec37]/10 border-[#13ec37]/20";
+      case "cancelled":
+        return "text-red-500 bg-red-500/10 border-red-500/20";
+      default:
+        return "text-slate-400 bg-slate-400/10";
     }
   };
 
-  const handleReject = async (orderId: string) => {
-    if (isProcessing) return;
-
-    // 1. Ask for rejection reason
-    const reason = window.prompt(
-      "Reason for rejection (e.g., Invalid receipt, Amount mismatch):"
-    );
-
-    // 2. Validate input (matches your Zod min(1) requirement)
-    if (reason === null) return; // Admin clicked cancel
-    if (reason.trim() === "") {
-      alert("Please provide a reason for rejection.");
-      return;
-    }
-
+  const handleVerify = async (orderId: string) => {
     setIsProcessing(true);
     try {
-      const response = await rejectOrder(orderId, reason);
-      if (response.success) {
-        alert("Order rejected and user notified.");
-        window.location.reload();
-      } else {
-        alert(response.message || "Failed to reject order.");
-      }
+      const response = await verifyOrder(orderId);
+      if (response.success) onUpdate();
     } catch (err) {
-      console.error("Error [Handle reject]: ", err);
-      alert("An error occurred while rejecting the order.");
+      console.error(err);
     } finally {
       setIsProcessing(false);
     }
   };
 
+  const handleReject = async (orderId: string) => {
+    setIsProcessing(true);
+    try {
+      // Direct rejection with default message since we are removing window.prompt
+      const response = await rejectOrder(orderId, "Order rejected by admin");
+      if (response.success) onUpdate();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const statusStyles = getStatusColor(order.status);
+
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden mb-6 flex flex-col md:flex-row">
-      {/* LEFT SIDE: Order & Products Info */}
-      <div className="flex-1 p-6 border-r border-gray-100">
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <h3 className="text-lg font-bold text-gray-900">
+    <div className="bg-white dark:bg-[#111c13] border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm flex flex-col md:flex-row items-center transition-all hover:border-[#13ec37]/30 group relative">
+      {/* 1. STATUS & ID */}
+      <Link
+        to={`/orders/${order._id}`}
+        className="p-4 md:p-6 flex items-center gap-4 w-full md:w-72 border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors group/link"
+      >
+        <div
+          className={`size-10 rounded-xl flex items-center justify-center shrink-0 border ${statusStyles}`}
+        >
+          <Package size={20} />
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-1">
+            <h3 className="text-sm font-black tracking-tight uppercase group-hover/link:text-primary transition-colors">
               {order.orderNumber}
             </h3>
-            <p className="text-xs text-gray-400">
-              Placed on {new Date(order.createdAt).toLocaleDateString()}
-            </p>
+            <ArrowUpRight
+              size={12}
+              className="opacity-0 group-hover/link:opacity-100 transition-opacity text-primary"
+            />
           </div>
-          <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-2.5 py-1 rounded-full border border-blue-100 uppercase">
-            {order.status.replace("_", " ")}
-          </span>
-        </div>
-
-        {/* Customer Details */}
-        <div className="grid grid-cols-2 gap-4 mb-6 text-sm py-3 px-4 bg-gray-50 rounded-xl">
-          <div>
-            <span className="text-gray-400 text-xs block">Customer Phone</span>
-            <span className="font-semibold text-gray-700">{order.phone}</span>
-          </div>
-          <div>
-            <span className="text-gray-400 text-xs block">Gender / Dept</span>
-            <span className="font-semibold text-gray-700">
-              {order.userGender}
+          <div className="flex flex-wrap items-center gap-2 mt-0.5">
+            <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">
+              {new Date(order.createdAt).toLocaleDateString()}
+            </span>
+            <span
+              className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border ${statusStyles}`}
+            >
+              {order.status.replace("_", " ")}
             </span>
           </div>
         </div>
+      </Link>
 
-        {/* Product List Section */}
-        <div className="space-y-3">
-          <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest">
-            Ordered Items
-          </h4>
-          {order.products.map((item) => (
-            <div
+      {/* 2. COMPACT ITEMS */}
+      <Link
+        to={`/orders/${order._id}`}
+        className="flex-1 p-4 flex items-center gap-4 overflow-hidden hover:opacity-80 transition-opacity"
+      >
+        <div className="flex -space-x-3 overflow-hidden">
+          {order.products.slice(0, 4).map((item) => (
+            <img
               key={item._id}
-              className="flex items-center gap-4 p-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors"
-            >
-              <img
-                src={`${API_URL}${item.productId.imageUrl}`}
-                alt={item.productId.name}
-                className="w-12 h-12 object-cover rounded-lg shadow-sm"
-              />
-              <div className="flex-1">
-                <p className="text-sm font-bold text-gray-800">
-                  {item.productId.name}
-                </p>
-                <div className="flex gap-3 mt-1">
-                  <span className="text-xs text-gray-500">
-                    Qty: {item.quantity}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    Price: ${item.price}
-                  </span>
-                  <span
-                    className={`text-[10px] font-bold px-1.5 rounded ${
-                      item.productId.stock > 0
-                        ? "text-green-500 bg-green-50"
-                        : "text-red-500 bg-red-50"
-                    }`}
-                  >
-                    Stock: {item.productId.stock}
-                  </span>
-                </div>
-              </div>
-              <p className="text-sm font-black text-gray-900">
-                ${(item.quantity * item.price).toFixed(2)}
-              </p>
-            </div>
+              src={`${API_URL}${item.productId.imageUrl}`}
+              className="size-10 rounded-xl object-cover border-2 border-white dark:border-[#111c13] shadow-md"
+              alt="product"
+            />
           ))}
+          {order.products.length > 4 && (
+            <div className="size-10 rounded-xl bg-slate-100 dark:bg-slate-800 border-2 border-white dark:border-[#111c13] flex items-center justify-center text-[10px] font-black text-slate-500">
+              +{order.products.length - 4}
+            </div>
+          )}
         </div>
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+          {order.products.length}{" "}
+          {order.products.length === 1 ? "Item" : "Items"}
+        </p>
+      </Link>
 
-        {/* Summary & Actions */}
-        <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-          <div>
-            <span className="text-xs text-gray-400 block">Total Amount</span>
-            <span className="text-xl font-black text-blue-600">
-              ${order.totalAmount}
-            </span>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => handleVerify(order._id)}
-              className="bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 px-6 rounded-xl transition-all shadow-md active:scale-95"
-            >
-              Approve
-            </button>
-            <button
-              onClick={() => handleReject(order._id)}
-              disabled={isProcessing || order.status === "cancelled"}
-              className="bg-white hover:bg-red-50 disabled:text-gray-300 disabled:border-gray-200 text-red-500 text-sm font-bold py-2 px-4 rounded-xl border border-red-100 transition-all"
-            >
-              {isProcessing ? "..." : "Reject"}
-            </button>
-          </div>
+      {/* 3. TOTAL */}
+      <div className="px-6 py-4 flex items-center justify-between md:justify-end gap-8 w-full md:w-auto">
+        <div className="text-left md:text-right min-w-24">
+          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+            Amount
+          </p>
+          <p className="text-xl font-black text-primary">
+            ${order.totalAmount}
+          </p>
         </div>
       </div>
 
-      {/* RIGHT SIDE: Payment Receipt Section */}
-      <div className="md:w-72 bg-gray-50 p-6 flex flex-col items-center justify-center">
-        <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4 self-start">
-          Payment Proof
-        </h4>
-        <div
-          className="relative group cursor-zoom-in"
+      {/* 4. QUICK ACTIONS */}
+      <div className="p-4 bg-slate-50 dark:bg-black/20 w-full md:w-auto flex items-center justify-center gap-2 border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800">
+        <button
           onClick={() =>
             window.open(`${API_URL}${order.paymentProof}`, "_blank")
           }
+          title="View Proof"
+          className="p-2.5 text-slate-400 hover:text-primary transition-all bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"
         >
-          <img
-            src={`${API_URL}${order.paymentProof}`}
-            alt="Proof"
-            className="w-full rounded-xl shadow-lg border border-white transition-transform group-hover:scale-[1.02]"
-          />
-          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 rounded-xl flex items-center justify-center transition-opacity">
-            <span className="text-white text-xs font-bold bg-black/40 px-3 py-1 rounded-full">
-              View Large
-            </span>
-          </div>
+          <Eye size={18} />
+        </button>
+
+        <div className="h-8 w-px bg-slate-200 dark:bg-slate-800 mx-1 hidden md:block"></div>
+
+        <div className="flex items-center gap-2">
+          {/* Reject Button (Only shows if not already cancelled) */}
+          {order.status !== "cancelled" && order.status !== "verified" && (
+            <button
+              onClick={() => handleReject(order._id)}
+              disabled={isProcessing}
+              className="p-2.5 text-red-500 hover:bg-red-500 hover:text-white transition-all bg-white dark:bg-slate-800 rounded-xl border border-red-200 dark:border-red-900/30 shadow-sm disabled:opacity-30"
+            >
+              <XCircle size={18} />
+            </button>
+          )}
+
+          {/* Approve Button (Only shows if not already verified) */}
+          {order.status !== "verified" && (
+            <button
+              onClick={() => handleVerify(order._id)}
+              disabled={isProcessing || order.status === "cancelled"}
+              className="px-5 py-2.5 bg-primary text-black rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#11d632] transition-all shadow-lg shadow-primary/20 disabled:opacity-30 flex items-center gap-2"
+            >
+              {isProcessing ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <CheckCircle size={14} />
+              )}
+              Approve
+            </button>
+          )}
         </div>
-        <p className="text-[10px] text-gray-400 mt-4 italic text-center leading-relaxed">
-          Verify that the amount on the receipt matches the total of{" "}
-          <span className="font-bold">${order.totalAmount}</span>
-        </p>
       </div>
     </div>
   );
