@@ -56,6 +56,31 @@ export const OrderController = {
     }
   },
 
+  getOrderById: async (req: Request, res: Response) => {
+    try {
+      const { orderId } = req.params;
+
+      const order = await Order.findById(orderId).populate(
+        "products.productId"
+      );
+
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: "Order not found",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: `Order by id: ${order.orderNumber}`,
+        data: order,
+      });
+    } catch (err) {
+      AppError("GET /orders/:orderId", res, err);
+    }
+  },
+
   verifyOrder: async (req: Request, res: Response) => {
     const { orderId } = req.params;
     try {
@@ -97,7 +122,7 @@ export const OrderController = {
       const user = await User.findById(order.userId);
       if (user && user.telegramUserId) {
         const message =
-          `✅ *Payment Verified!*\n\n` +
+          `✅ *Payment Verified!* \n\n` +
           `Your order *${order.orderNumber}* has been confirmed.\n` +
           `We are preparing your items for delivery. 🚀`;
 
