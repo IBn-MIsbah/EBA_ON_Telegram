@@ -6,6 +6,11 @@ export const getOrders = async (): Promise<OrderResponse> => {
   return response.data;
 };
 
+export const getOrderById = async (id: string) => {
+  const response = await api.get(`/orders/${id}`);
+  return response.data;
+};
+
 export const verifyOrder = async (orderId: string) => {
   const response = await api.patch(`/orders/verify/${orderId}`);
   return response.data;
