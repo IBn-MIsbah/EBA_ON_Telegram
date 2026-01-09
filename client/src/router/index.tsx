@@ -1,18 +1,19 @@
 import { createBrowserRouter } from "react-router-dom";
 import { lazy } from "react";
 
-const MainLayout = lazy(() => import("../layout/MainLayout"));
-const CreateProduct = lazy(
-  () => import("../components/form/CreateProductForm")
-);
-const Login = lazy(() => import("../page/Login"));
-const ProductDetail = lazy(() => import("../page/ProductDetail"));
-const Dashboard = lazy(() => import("../page/Dashboard"));
-const EditProduct = lazy(() => import("../components/form/EditProduct"));
+const MainLayout = lazy(() => import("@/layout/MainLayout"));
+const CreateProduct = lazy(() => import("@/components/form/CreateProductForm"));
+const Login = lazy(() => import("@/page/Login"));
+const ProductDetail = lazy(() => import("@/page/ProductDetail"));
+const Dashboard = lazy(() => import("@/page/Dashboard"));
+const EditProduct = lazy(() => import("@/components/form/EditProduct"));
 const OrderPage = lazy(() => import("../page/Order"));
-const Settings = lazy(() => import("../page/Settings"));
+const Settings = lazy(() => import("@/page/Settings"));
 
-import { ProtectedRoute } from "../components/ProtectedRoute";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
+import NotFound from "@/page/pageNotFound";
+import OrderDetail from "@/page/OrderDetail";
+import Users from "@/page/Users";
 
 export const router = createBrowserRouter([
   {
@@ -28,12 +29,14 @@ export const router = createBrowserRouter([
       { path: "/product/:id/edit", element: <EditProduct /> },
       { path: "/create-product", element: <CreateProduct /> },
       { path: "/orders", element: <OrderPage /> },
+      { path: "/orders/:id", element: <OrderDetail /> },
       { path: "/settings", element: <Settings /> },
+      { path: "/users", element: <Users /> },
     ],
   },
   { path: "login", element: <Login /> },
   {
     path: "*",
-    element: <div className="p-20 text-center">404 - Page Not Found</div>,
+    element: <NotFound />,
   },
 ]);
