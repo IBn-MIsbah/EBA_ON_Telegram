@@ -58,8 +58,8 @@ const limiter = rateLimit({
 app.use(limiter);
 
 //============== Telegram Routes ===========
-setupTelegramWebhook(app, telegramBot);
-setupBot();
+// setupTelegramWebhook(app, telegramBot);
+// setupBot();
 
 //============== Web Routes ================
 app.use(`${apiPrefix}/users`, userRouter);
@@ -102,27 +102,27 @@ app.listen(PORT, async () => {
     `Server running in ${isProduction ? "PRODUCTION" : "DEVELOPMENT"} mode`
   );
 
-  if (!isProduction) {
-    try {
-      // Using the newer SDK syntax
-      const session = await ngrok.connect({
-        addr: PORT,
-        authtoken: process.env.NGROK_AUTHTOKEN,
-      });
+  // if (!isProduction) {
+  //   try {
+  //     // Using the newer SDK syntax
+  //     const session = await ngrok.connect({
+  //       addr: PORT,
+  //       authtoken: process.env.NGROK_AUTHTOKEN,
+  //     });
 
-      publicUrl = session.url()!; // Save the public URL
+  //     publicUrl = session.url()!; // Save the public URL
 
-      console.log(`🚀 Public Tunnel active: ${publicUrl}`);
-      console.log(
-        `🖼️  Images will be served at: ${publicUrl}/public/uploads/...`
-      );
+  //     console.log(`🚀 Public Tunnel active: ${publicUrl}`);
+  //     console.log(
+  //       `🖼️  Images will be served at: ${publicUrl}/public/uploads/...`
+  //     );
 
-      // Store it in process.env so your telegramBot file can see it
-      process.env.PUBLIC_URL = publicUrl;
-    } catch (err) {
-      console.error("Error starting Ngrok:", err);
-    }
-  }
+  //     // Store it in process.env so your telegramBot file can see it
+  //     process.env.PUBLIC_URL = publicUrl;
+  //   } catch (err) {
+  //     console.error("Error starting Ngrok:", err);
+  //   }
+  // }
   console.log(`server running on http://localhost:${PORT}`);
 });
 
