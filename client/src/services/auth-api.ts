@@ -29,3 +29,8 @@ export const patchData = async (id: string, data: UpdateUserBody) => {
   const response = await api.patch(`/auth/update/${id}`, data);
   return response.data;
 };
+
+export const getUsers = async () => {
+  const response = await api.get("/users");
+  return response.data;
+};
