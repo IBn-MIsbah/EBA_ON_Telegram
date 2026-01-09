@@ -11,6 +11,7 @@ const Dashboard = lazy(() => import("../page/Dashboard"));
 const EditProduct = lazy(() => import("../components/form/EditProduct"));
 const OrderPage = lazy(() => import("../page/Order"));
 const Settings = lazy(() => import("../page/Settings"));
+const Not = lazy(() => import("../page/Not"));
 
 import { ProtectedRoute } from "../components/ProtectedRoute";
 
@@ -29,11 +30,13 @@ export const router = createBrowserRouter([
       { path: "/create-product", element: <CreateProduct /> },
       { path: "/orders", element: <OrderPage /> },
       { path: "/settings", element: <Settings /> },
+      // {path:"/NotFound",element:<Not/>}
     ],
   },
   { path: "login", element: <Login /> },
+
   {
     path: "*",
-    element: <div className="p-20 text-center">404 - Page Not Found</div>,
+    element: <Not />,
   },
 ]);
