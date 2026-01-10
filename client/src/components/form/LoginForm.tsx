@@ -1,14 +1,27 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginInputSchema, type LoginInput } from "../../schemas/auth-schema";
-import { Lock, UserRound, LogIn, ShieldCheck, Loader2 } from "lucide-react";
+import {
+  Lock,
+  UserRound,
+  LogIn,
+  ShieldCheck,
+  Loader2,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 interface LoginFormProps {
   onSubmit: (data: LoginInput) => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+
+  setTimeout(() => {
+    setShowPassword(false);
+  }, 2000);
   const {
     register,
     handleSubmit,
@@ -29,7 +42,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
 
       <div className="w-full max-w-md bg-white dark:bg-[#111c13] rounded-3xl shadow-2xl border border-slate-200/60 dark:border-slate-800/60 overflow-hidden relative backdrop-blur-sm">
         {/* Top brand accent */}
-        <div className="h-1.5 w-full bg-gradient-to-r from-[#13ec37] to-[#3bf55a]"></div>
+        <div className="h-1.5 w-full bg-linear-to-r from-[#13ec37] to-[#3bf55a]"></div>
 
         <div className="p-10">
           {/* Header section */}
@@ -106,11 +119,35 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit }) => {
                 <input
                   id="password"
                   {...register("password")}
-                  className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-[#13ec37] focus:ring-4 focus:ring-[#13ec37]/10 shadow-sm outline-none transition-all"
+                  className={`w-full pl-11 pr-12 py-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-[#13ec37] focus:ring-4 focus:ring-[#13ec37]/10 shadow-sm outline-none transition-all ${
+                    errors.password
+                      ? "border-red-500/50 focus:border-red-500 focus:ring-red-500/10"
+                      : ""
+                  }`}
                   placeholder="••••••••"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   disabled={isSubmitting}
                 />
+
+                {/* --- Password Toggle Button --- */}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-[#13ec37] transition-colors focus:outline-none"
+                  tabIndex={-1} // Prevents tabbing to the eye icon for a faster login flow
+                >
+                  {showPassword ? (
+                    <EyeOff
+                      size={18}
+                      className="animate-in fade-in duration-200"
+                    />
+                  ) : (
+                    <Eye
+                      size={18}
+                      className="animate-in fade-in duration-200"
+                    />
+                  )}
+                </button>
               </div>
               {errors.password && (
                 <p className="text-red-500 text-xs font-bold mt-1.5 ml-1 flex gap-1 items-center">
