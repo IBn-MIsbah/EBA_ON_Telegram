@@ -9,11 +9,11 @@ const Dashboard = lazy(() => import("@/page/Dashboard"));
 const EditProduct = lazy(() => import("@/components/form/EditProduct"));
 const OrderPage = lazy(() => import("../page/Order"));
 const Settings = lazy(() => import("@/page/Settings"));
+const OrderDetail = lazy(() => import("@/page/OrderDetail"));
+const NotFound = lazy(() => import("@/page/NotFound"));
+const Users = lazy(() => import("@/page/Users"));
 
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import NotFound from "@/page/pageNotFound";
-import OrderDetail from "@/page/OrderDetail";
-import Users from "@/page/Users";
 
 export const router = createBrowserRouter([
   {
