@@ -7,107 +7,115 @@ import { Link } from "react-router-dom";
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
 
-  if (!user) return null; // MainLayout handles the loading state
+  if (!user) return null;
 
   return (
-    <div className="p-5 md:p-10 space-y-8 animate-in fade-in duration-500">
+    <div className="p-5 md:p-10 space-y-10 animate-in fade-in duration-500">
       {/* --- Header Section --- */}
       <div className="flex flex-col gap-1">
-        <h2 className="text-2xl md:text-4xl font-black tracking-tight text-slate-900 dark:text-white">
+        <h2 className="text-3xl md:text-4xl font-black italic tracking-tighter uppercase text-slate-900 dark:text-white">
           Overview
         </h2>
-        <p className="text-sm md:text-base text-slate-500 font-medium">
-          Welcome back, {user.name}
-        </p>
+        <div className="flex items-center gap-2">
+          <span className="size-1.5 rounded-full bg-[#13ec37] animate-pulse" />
+          <p className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-slate-500">
+            Authenticated: {user.name}
+          </p>
+        </div>
       </div>
 
-      {/* --- Stats: Horizontal Scroll on Mobile, Grid on Desktop --- */}
-      <div className="flex md:grid md:grid-cols-3 gap-4 overflow-x-auto pb-4 md:pb-0 snap-x no-scrollbar">
+      {/* --- Stats Grid --- */}
+      {/* <div className="flex md:grid md:grid-cols-3 gap-6 overflow-x-auto pb-4 md:pb-0 snap-x no-scrollbar">
         <StatCard
-          label="Revenue"
-          value="$4,250"
-          trend="+12% this month"
+          label="Total Revenue"
+          value="--" // Replace with data.revenue
+          trend="Live_Sync"
           icon={<DollarSign size={18} />}
           color="green"
         />
         <StatCard
           label="Active Orders"
-          value="14"
-          trend="+3 new"
+          value="--" // Replace with data.orderCount
+          trend="0_Pending"
           icon={<ShoppingBag size={18} />}
           color="green"
         />
         <StatCard
           label="Low Stock"
-          value="02"
-          trend="Requires Action"
+          value="--" // Replace with data.lowStockCount
+          trend="System_Alert"
           icon={<AlertCircle size={18} />}
           color="red"
         />
-      </div>
+      </div> */}
 
       {/* --- Inventory Section --- */}
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h3 className="text-xl font-black text-slate-900 dark:text-white">
-            Inventory
-          </h3>
+        <div className="flex justify-between items-end border-b border-slate-100 dark:border-slate-800 pb-4">
+          <div>
+            <h3 className="text-xl font-black italic uppercase tracking-tight text-slate-900 dark:text-white">
+              Inventory Registry
+            </h3>
+            <p className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">
+              Manage_Products
+            </p>
+          </div>
           <Link
             to="/create-product"
-            className="group p-2 bg-[#13ec37] text-black rounded-xl shadow-lg shadow-[#13ec37]/20 md:px-5 md:py-2.5 md:text-sm font-bold flex items-center gap-2 transition-all active:scale-95 hover:bg-[#11d632]"
+            className="group px-5 py-2.5 bg-[#13ec37] text-black rounded-xl shadow-lg shadow-[#13ec37]/20 text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all active:scale-95 hover:bg-[#11d632]"
           >
             <PlusCircle
-              size={20}
+              size={18}
+              strokeWidth={3}
               className="group-hover:rotate-90 transition-transform"
             />
-            <span className="hidden md:inline">Add Product</span>
+            Add Product
           </Link>
         </div>
 
-        {/* The component that fetches and maps your products */}
         <ListProducts />
       </div>
     </div>
   );
 };
 
-/* --- Local Sub-Component for Stats --- */
+/* --- StatCard Component --- */
 interface StatCardProps {
   label: string;
-  value: string;
+  value: string | number;
   trend: string;
   icon: React.ReactNode;
   color: "green" | "red";
 }
 
 const StatCard = ({ label, value, trend, icon, color }: StatCardProps) => (
-  <div className="min-w-[200px] flex-1 snap-start bg-white dark:bg-[#111c13] p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all hover:shadow-md">
-    <div className="flex justify-between items-start mb-4">
-      <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+  <div className="min-w-[240px] flex-1 snap-start bg-white dark:bg-[#111c13] p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all hover:border-[#13ec37]/30 group">
+    <div className="flex justify-between items-start mb-6">
+      <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-slate-400">
         {label}
       </span>
       <div
-        className={`p-2 rounded-lg ${
+        className={`p-2 rounded-xl transition-transform group-hover:scale-110 ${
           color === "red"
-            ? "bg-red-50 text-red-500"
-            : "bg-[#13ec37]/10 text-[#13ec37]"
+            ? "bg-red-500/10 text-red-500 border border-red-500/20"
+            : "bg-[#13ec37]/10 text-[#13ec37] border border-[#13ec37]/20"
         }`}
       >
         {icon}
       </div>
     </div>
     <div className="flex flex-col">
-      <h4 className="text-3xl font-black text-slate-900 dark:text-white leading-none">
+      <h4 className="text-4xl font-black text-slate-900 dark:text-white leading-none tracking-tighter">
         {value}
       </h4>
       <span
-        className={`text-[10px] font-bold mt-2 flex items-center gap-1 ${
+        className={`text-[9px] font-mono font-bold mt-4 flex items-center gap-2 uppercase tracking-widest ${
           color === "red" ? "text-red-500" : "text-[#13ec37]"
         }`}
       >
         <span
-          className={`size-1 rounded-full ${
-            color === "red" ? "bg-red-500" : "bg-[#13ec37]"
+          className={`size-1.5 rounded-full ${
+            color === "red" ? "bg-red-500 animate-pulse" : "bg-[#13ec37]"
           }`}
         />
         {trend}
