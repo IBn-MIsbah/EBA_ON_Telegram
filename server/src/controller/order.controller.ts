@@ -126,7 +126,9 @@ export const OrderController = {
           `Your order *${order.orderNumber}* has been confirmed.\n` +
           `We are preparing your items for delivery. 🚀`;
 
-        await telegramBot.sendMessage(user.telegramUserId, message);
+        await telegramBot.sendMessage(user.telegramUserId, message, {
+          parse_mode: "Markdown",
+        });
       }
 
       return res.status(200).json({
