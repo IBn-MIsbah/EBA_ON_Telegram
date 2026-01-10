@@ -7,12 +7,12 @@ import {
   PlusCircle,
   Settings,
   LogOut,
-  User,
   Menu,
   X,
   ChevronRight,
   Users,
 } from "lucide-react";
+import { toast } from "sonner";
 
 const MainLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -24,6 +24,7 @@ const MainLayout = () => {
     try {
       await logout();
       navigate("/login");
+      toast.success("Logged out successfully!");
     } catch (err) {
       console.error("Logout err: ", err);
     }
