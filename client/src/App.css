@@ -1,1 +1,29 @@
 @import "tailwindcss";
+@theme {
+  /* This makes the whole circle rotate */
+  --animation-slow-spin: spin 2s linear infinite;
+
+  /* This is your pulse animation for the dots */
+  --animation-pulse-dot: pulse0112 0.9s ease-in-out infinite;
+}
+
+@keyframes pulse0112 {
+  0%,
+  100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
