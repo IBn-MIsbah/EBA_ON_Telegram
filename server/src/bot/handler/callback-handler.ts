@@ -50,6 +50,7 @@ export const callbackHandler = () => {
             `━━━━━━━━━━━━━━━━\n` +
             `📦 /products — Browse collection\n` +
             `🛒 /cart — View items\n` +
+            `🔢 /order — view orderd items and status\n` +
             `📞 /contact — Support\n` +
             `🗑 /delete — Clear data\n\n` +
             `*Happy Shopping!* ☕✨`;
