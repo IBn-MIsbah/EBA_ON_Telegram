@@ -20,6 +20,7 @@ import {
   type ProductUpdateInput,
   type Product,
 } from "../../schemas/productSchema";
+import { toast } from "sonner";
 
 const SERVER_URL = "http://localhost:5000";
 
@@ -98,10 +99,12 @@ const EditProduct: React.FC = () => {
 
     try {
       await updatedProduct(id, formData as any);
-      alert("Product updated successfully!");
+      toast.success("Product updated successfully!", {
+        duration: 3000,
+      });
       navigate("/");
     } catch (err) {
-      alert("Update failed");
+      toast.error("Update failed", { duration: 3000 });
     } finally {
       setLoading(false);
     }
