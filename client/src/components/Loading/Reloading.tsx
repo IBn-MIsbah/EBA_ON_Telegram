@@ -11,7 +11,7 @@ const Reloading: React.FC = () => {
             style={{ transform: `rotate(${i * 45}deg)` }}
           >
             <div
-              className="h-[25%] w-[25%] rounded-full bg-[#504E65] opacity-50 animate-[pulse0112_0.9s_ease-in-out_infinite]"
+              className="h-[25%] w-[25%] rounded-full bg-[#053bae] opacity-50 animate-[pulse0112_0.9s_ease-in-out_infinite]"
               style={{
                 animationDelay: `${-0.875 + i * 0.125}s`,
                 // Adding a slight glow to make it look "cleaner"

@@ -124,7 +124,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, message, error }) => {
               disabled={isSubmitting || !!message}
               className={`flex items-center justify-center gap-2 font-bold py-2 rounded-md transition mt-2 shadow-lg active:scale-95 ${
                 isSubmitting || message
-                  ? "bg-gray-400 cursor-not-allowed text-gray-700"
+                  ? "bg-[#6365EF] cursor-not-allowed text-gray-700"
                   : "bg-blue-600 hover:bg-blue-700 text-white"
               }`}
             >
