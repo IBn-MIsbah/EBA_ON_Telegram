@@ -16,6 +16,7 @@ import {
   type User,
 } from "../schemas/auth-schema";
 import { patchData } from "../services/auth-api";
+import { toast } from "sonner";
 
 interface SettingsPageProps {
   currentUser: User | null;
@@ -59,10 +60,14 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ currentUser }) => {
 
       if (currentUser?._id) {
         await patchData(currentUser._id, payload);
-        alert("Settings updated successfully!");
+        toast.success("Settings updated successfully!", {
+          duration: 3000,
+        });
       }
     } catch (error: any) {
-      alert(error.response?.data?.message || "Update failed");
+      toast.error(error.response?.data?.message || "Update failed", {
+        duration: 3000,
+      });
     }
   };
 
